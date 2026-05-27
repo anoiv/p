@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习 AIGC - 何老师的提示词</title>
+<style>
+:root { --bg:#F8F9FB; --card:#fff; --text:#1A1A2E; --text2:#6B7280; --border:#E5E7EB; --accent:#6366F1; --gold:#F59E0B; }
+[data-theme="dark"] { --bg:#0F172A; --card:#1E293B; --text:#F1F5F9; --text2:#94A3B8; --border:#334155; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif; background:var(--bg); color:var(--text); line-height:1.8; }
+.container { max-width:900px; margin:0 auto; padding:0 24px 60px; }
+.page-header { background:linear-gradient(135deg,#0F172A,#1E1B4B,#312E81); padding:48px 24px; text-align:center; color:#fff; margin-bottom:32px; }
+.page-header h1 { font-size:28px; font-weight:800; margin-bottom:8px; }
+.page-header h1 span { background:linear-gradient(135deg,#C084FC,#818CF8,#38BDF8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.page-header p { opacity:0.8; font-size:15px; }
+.back-link { display:inline-flex; align-items:center; gap:6px; color:rgba(255,255,255,0.8); text-decoration:none; font-size:14px; margin-bottom:20px; }
+.back-link:hover { opacity:1; }
+.section-title { font-size:20px; font-weight:800; color:var(--accent); margin:32px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--border); }
+.highlight-box { background:linear-gradient(135deg,#EEF2FF,#E0E7FF); border:1px solid var(--accent); border-radius:16px; padding:24px 28px; margin-bottom:20px; }
+[data-theme="dark"] .highlight-box { background:linear-gradient(135deg,#1E1B4B,#312E81); }
+.highlight-box h3 { font-size:17px; color:var(--accent); margin-bottom:10px; }
+.highlight-box ul,.highlight-box p { font-size:14px; }
+.highlight-box li { margin-bottom:6px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.chip { padding:6px 16px; border-radius:20px; background:var(--accent); color:#fff; font-size:13px; font-weight:600; }
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
+.card-grid .info-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.info-card h4 { font-size:15px; font-weight:700; margin-bottom:8px; color:var(--accent); }
+.info-card p { font-size:13px; color:var(--text2); }
+.salary-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+.salary-table th,.salary-table td { padding:10px 14px; border:1px solid var(--border); text-align:left; }
+.salary-table th { background:var(--accent); color:#fff; font-weight:700; }
+.qr-section { text-align:center; padding:32px; background:var(--card); border-radius:16px; border:2px solid var(--accent); margin:28px 0; }
+.qr-section img { width:160px; height:160px; border-radius:12px; border:2px solid var(--border); }
+.qr-section h3 { font-size:18px; margin:12px 0 6px; }
+.qr-section p { font-size:14px; color:var(--text2); }
+.course-table { width:100%; border-collapse:collapse; font-size:13px; margin:12px 0; }
+.course-table th,.course-table td { padding:8px 12px; border:1px solid var(--border); }
+.course-table th { background:var(--accent); color:#fff; font-weight:700; }
+.pill-list { display:flex; flex-wrap:wrap; gap:6px; }
+.pill { padding:4px 14px; border-radius:14px; background:var(--border); font-size:13px; }
+@media (max-width:640px) { .card-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <a href="index.html" class="back-link">← 返回提示词画廊</a>
+  <h1>学习 <span>AIGC</span></h1>
+  <p>电子科技大学 · 人工智能新媒体运营师培育项目</p>
+</header>
+
+<div class="container">
+
+<div class="chip-row">
+  <span class="chip">🏫 电子科技大学</span>
+  <span class="chip">🤖 AI赋能</span>
+  <span class="chip">📱 新媒体运营</span>
+  <span class="chip">📜 权威认证</span>
+  <span class="chip">💼 就业保障</span>
+</div>
+
+<!-- ===== 1 ===== -->
+<h2 class="section-title">一、项目背景</h2>
+<p style="font-size:14px;color:var(--text2);">本项目是与<b>电子科技大学</b>官方合作的数字人才培养项目，聚焦<b>人工智能新媒体运营师</b>、大数据工程师、云计算工程师、人工智能训练师四大数字经济核心岗位，打造「学术筑基、实战赋能、权威认证、就业闭环」四位一体的高端数字人才培养体系。以「融无界之智，启有为之路」为使命，为高校毕业生、在职转型人群提供全周期职业成长赋能。</p>
+
+<!-- ===== 2 ===== -->
+<h2 class="section-title">二、培养目标</h2>
+<div class="highlight-box">
+  <h3>人工智能新媒体运营师</h3>
+  <p>利用人工智能技术优化新媒体内容生产、分发、互动及数据分析的专业角色。核心目标是通过AI工具提升运营效率、增强内容个性化并实现数据驱动的精准决策，是<b>AI+新媒体赛道的复合型核心人才</b>。</p>
+</div>
+<div class="chip-row" style="margin-top:12px;">
+  <span class="pill">抖音</span><span class="pill">小红书</span><span class="pill">视频号</span><span class="pill">快手</span><span class="pill">公众号</span>
+</div>
+<div class="chip-row">
+  <span class="pill">🤖 智能内容生成</span><span class="pill">📊 AI数据洞察</span><span class="pill">🔄 全链路AI赋能</span>
+</div>
+
+<!-- ===== 3 ===== -->
+<h2 class="section-title">三、岗位前景与职业发展</h2>
+<div class="card-grid">
+  <div class="info-card">
+    <h4>📈 行业趋势</h4>
+    <p>AI+新媒体是数字经济全新赛道，未来所有企业都需要通过新媒体获客营销且全面接入AI。<b>岗位缺口接近3000万人</b>，入行门槛低、发展空间大、薪资涨幅快。</p>
+  </div>
+  <div class="info-card">
+    <h4>🏢 就业方向</h4>
+    <p>央国企、上市公司、互联网企业、自媒体头部机构、传媒公司、广告公司、影视后期制作公司，覆盖全行业优质用工单位。</p>
+  </div>
+</div>
+<table class="salary-table">
+  <tr><th>岗位</th><th>薪资范围</th></tr>
+  <tr><td>运营专员</td><td>月薪 8K - 12K</td></tr>
+  <tr><td>运营经理</td><td>月薪 15K - 20K</td></tr>
+  <tr><td>运营总监</td><td>月薪 25K + 绩效提成</td></tr>
+</table>
+<p style="text-align:center;color:var(--accent);font-weight:700;font-size:15px;">月薪过万不是目标，而是起点</p>
+
+<!-- ===== 4 ===== -->
+<h2 class="section-title">四、招生适配人群</h2>
+<div class="chip-row">
+  <span class="chip">🎓 应届毕业生</span><span class="chip">🔄 零基础转行</span><span class="chip">📈 在职技能升级</span><span class="chip">🛒 电商直播从业者</span><span class="chip">🎖️ 退役军人</span><span class="chip">🏢 央国企求职者</span>
+</div>
+
+<!-- ===== 5 ===== -->
+<h2 class="section-title">五、核心培养模式</h2>
+<table class="course-table">
+  <tr><th>核心模块</th><th>核心价值</th></tr>
+  <tr><td>🎓 学术筑基</td><td>电子科大顶尖师资授课，夯实新媒体与AI底层理论体系</td></tr>
+  <tr><td>🛠️ 实战赋能</td><td>80%课程为实操内容，真实商业项目手把手带练</td></tr>
+  <tr><td>📜 权威认证</td><td>校企联合结业认证 + 人社部AIGC技术培训证书</td></tr>
+  <tr><td>💼 就业闭环</td><td>300+合作企业岗位内推，全流程求职辅导兜底</td></tr>
+</table>
+
+<!-- ===== 6 ===== -->
+<h2 class="section-title">六、课程体系</h2>
+<p style="font-size:14px;color:var(--text2);margin-bottom:12px;"><b>线下脱产面授 · 45天系统化阶梯式教学</b>　｜　每天 9:00-12:00 / 14:00-18:00 / 晚自习 19:00-21:00　｜　每周5天</p>
+<table class="course-table">
+  <tr><th>阶段</th><th>核心内容</th></tr>
+  <tr><td>🎬 AIGC 影视全流程</td><td>ComfyUI 环境搭建、核心生图工作流、进阶控制与精细化视觉创作、AI 短剧漫剧全流程实战</td></tr>
+  <tr><td>✂️ AI 剪辑全流程</td><td>剪映 AI 全功能拆解、AI 驱动短视频数据优化、多平台算法适配与批量创作</td></tr>
+  <tr><td>📡 直播运营</td><td>主播系统化培训、直播脚本设计、选品策略与场景搭建、AIGC 智能直播</td></tr>
+  <tr><td>📊 投放与抖店</td><td>DOU+、小店随心推、巨量千川投放全实操；抖店运营全案与商品卡流量运营</td></tr>
+  <tr><td>🏆 结业考核</td><td>垂直行业全链路 AI 实操、结业展评</td></tr>
+</table>
+
+<!-- ===== 7 ===== -->
+<h2 class="section-title">七、课程核心优势</h2>
+<div class="card-grid">
+  <div class="info-card"><h4>👨‍🏫 双师授课</h4><p>电子科大学术师资 + 头部MCN实战操盘手</p></div>
+  <div class="info-card"><h4>📚 全场景覆盖</h4><p>图文/短视频/直播/运营/变现全链路</p></div>
+  <div class="info-card"><h4>👥 小班教学</h4><p>每班限30人，一对一答疑督学</p></div>
+  <div class="info-card"><h4>🚀 实战为王</h4><p>真实商业项目实操，毕业即拥有成熟作品集</p></div>
+  <div class="info-card"><h4>🔄 前沿同步</h4><p>课程实时更新，贴合最新AI技术迭代</p></div>
+  <div class="info-card"><h4>♾️ 终身服务</h4><p>课程免费更新 + 技术答疑 + 资源持续共享</p></div>
+</div>
+
+<!-- ===== 8 ===== -->
+<h2 class="section-title">八、双师型师资</h2>
+<div class="card-grid">
+  <div class="info-card">
+    <h4>🎓 高校学术师资</h4>
+    <p>电子科技大学数字传媒、人工智能相关专业资深讲师，负责底层理论教学，构建系统化知识体系。</p>
+  </div>
+  <div class="info-card">
+    <h4>💼 行业实战导师</h4>
+    <p>5年以上新媒体实战经验，头部MCN资深操盘手、百万粉丝博主、品牌新媒体总监，深耕AIGC落地应用3年以上。</p>
+  </div>
+</div>
+
+<!-- ===== 9 ===== -->
+<h2 class="section-title">九、认证与就业保障</h2>
+<div class="highlight-box">
+  <h3>📜 校企联合权威认证</h3>
+  <p>学员完成课程与实战项目，通过考核后可获得<b>电子科技大学数字人才实训培育项目（AIGC新媒体运营师）结业证书</b>，并考取<b>人社部生成式人工智能（AIGC）技术培训证书</b>，官方认证，学术与行业双重背书。</p>
+</div>
+<div class="highlight-box">
+  <h3>💼 全链路就业闭环保障</h3>
+  <ul>
+    <li>✅ 统一主推入职一线或新一线城市新媒体、互联网优质企业</li>
+    <li>✅ 300+合作企业人才合作，专属岗位内推，精准匹配</li>
+    <li>✅ 一对一就业辅导，简历优化 + 作品集打磨 + 模拟面试全流程</li>
+    <li>✅ 终身免费课程更新 + 长期技术答疑 + 副业接单资源持续对接</li>
+  </ul>
+</div>
+
+<!-- ===== 10 ===== -->
+<h2 class="section-title">十、报名咨询</h2>
+<div class="qr-section">
+  <img src="qr-code.png" alt="课程顾问二维码">
+  <h3>📱 扫码添加课程顾问</h3>
+  <p>免费领取试听课 + AIGC 专属资料包</p>
+  <p style="margin-top:8px;font-size:13px;color:var(--text2);">⏰ 小班限额招生，每班限30人，满额即止</p>
+</div>
+
+<p style="text-align:center;color:var(--accent);font-weight:700;font-size:16px;margin-top:16px;">
+  融无界之智，启有为之路。
+</p>
+
+</div>
+
+<script>
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+</script>
+</body>
+</html>

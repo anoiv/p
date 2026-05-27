@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>共享资源 - 何老师的提示词</title>
+<style>
+:root {
+  --bg: #0a0a10; --card: #12121c; --border: #262638;
+  --text: #e0e0f0; --text2: #9090b0; --text3: #606078;
+  --accent: #8B5CF6; --accent2: #A855F7;
+  --radius: 12px; --font: 'Segoe UI', system-ui, sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f5f5f8; --card: #fff; --border: #e0e0e8;
+  --text: #1a1a2e; --text2: #666680; --text3: #999;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent2); text-decoration: none; }
+
+header {
+  position: sticky; top: 0; z-index: 100; background: var(--card);
+  border-bottom: 1px solid var(--border); padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+header .logo { font-size: 18px; font-weight: 700; white-space: nowrap; }
+header .logo span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+header nav { display: flex; gap: 8px; }
+header nav a { color: var(--text2); font-size: 13px; padding: 6px 10px; border-radius: 6px; transition: all 0.2s; }
+header nav a:hover, header nav a.active { color: var(--text); background: var(--border); }
+.search-wrap { flex: 1; min-width: 160px; position: relative; }
+.search-wrap input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text3); }
+.result-count { font-size: 12px; color: var(--text3); white-space: nowrap; }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 16px; }
+
+.categories { display: flex; gap: 6px; flex-wrap: wrap; padding: 16px 20px 0; max-width: 1400px; margin: 0 auto; }
+.cat-chip { padding: 6px 14px; border-radius: 16px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s; background: var(--card); color: var(--text2); }
+.cat-chip:hover, .cat-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.stats { padding: 12px 20px 0; max-width: 1400px; margin: 0 auto; font-size: 13px; color: var(--text2); }
+
+.gallery { max-width: 1400px; margin: 0 auto; padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: all 0.2s; display: flex; flex-direction: column; }
+.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.card-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; flex: 1; }
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.card-tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--border); color: var(--text2); }
+.card-tag.adobe { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+.card-tag.ai { background: rgba(139,92,246,0.15); color: #A78BFA; }
+.card-tag.apple { background: rgba(110,231,183,0.15); color: #6EE7B7; }
+.card-link { display: inline-block; padding: 8px 14px; background: var(--accent); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 500; text-align: center; }
+.card-link:hover { background: var(--accent2); }
+.card-link.empty { background: var(--border); color: var(--text3); pointer-events: none; }
+
+.empty { text-align: center; padding: 60px 20px; color: var(--text3); grid-column: 1/-1; }
+.empty span { font-size: 48px; display: block; margin-bottom: 12px; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 10px 24px; font-size: 14px; z-index: 999; box-shadow: 0 8px 30px rgba(0,0,0,0.4); animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@media (max-width: 768px) { .gallery { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>何老师的提示词</span></div>
+  <nav>
+    <a href="index.html">提示词库</a>
+    <a href="generate.html">AI 生成</a>
+    <a href="resources.html" class="active">共享资源</a>
+    <a href="new-media.html">面试技巧</a>
+    <a href="aigc.html">学习 AIGC</a>
+  </nav>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="搜索工具...">
+  </div>
+  <span class="result-count" id="resultCount"></span>
+  <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+</header>
+
+<div class="categories" id="catFilters"></div>
+<div class="stats" id="stats"></div>
+<div class="gallery" id="gallery"></div>
+
+<script>
+// ===================== 数据 =====================
+const RESOURCES = [
+// ---- Adobe 系列 ----
+{name:"Photoshop 2026 正式版",xunlei:"https://pan.xunlei.com/s/VOckg2q2sTZ3IGDgfFklkfiTA1?pwd=uxir",desc:"AI 驱动的新一代图像编辑创意工具，新增 Generative Fill 等 AI 功能",cat:"Adobe 系列",tag:"adobe",url:"https://www.qijishow.com/down/Photoshop2026.html",img:"images/tool-qijishowMG549098ps2025.jpg"},
+{name:"Adobe CC 2026 整套",img:"images/tool-qijishowQQ202400712-132613@2x12.jpg",desc:"最新 Creative Cloud 2026 全套，含 Photoshop、Illustrator、After Effects、Premiere Pro 等",cat:"Adobe 系列",tag:"adobe",url:"https://www.qijishow.com/down/Adobe%20CC2026.html",bdlink:"https://pan.baidu.com/s/1xd4SurOuRfjMjbCTCugZAw?pwd=qiji"},
+{name:"Illustrator CC 2022 增强版",img:"images/tool-img_62f97c95ad01c.jpg",desc:"矢量图形设计软件，内置大量实用插件",cat:"Adobe 系列",tag:"adobe",url:"https://www.qijishow.com/down/Adobe%20Illustrator%202022.html",bdlink:"https://pan.baidu.com/s/1JdPj7WIIoa2JQCmjWDyrlw?pwd=qiji"},
+// ---- 视频剪辑 ----
+{name:"剪映 专业版 破解版",quark:"https://pan.quark.cn/s/87e9d125d6a2",desc:"抖音官方出品视频剪辑软件，AI 字幕、智能抠像、海量素材模板，专业版解锁全部 VIP 功能",cat:"视频剪辑",url:""},
+
+// ---- XMind 系列 ----
+{name:"XMind 2024 Pro",desc:"专业思维导图和头脑风暴工具，支持鱼骨图、矩阵图、时间轴等多种结构",cat:"XMind 系列",url:"https://www.qijishow.com/down/xmind%20zen.html",img:"images/tool-2b68c3b0-823f-6a37-9a0f-2b0ca150d046.jpg",bdlink:"https://pan.baidu.com/s/1Hp-QbNbamT-biC3Tr8106A?pwd=qiji"},
+// ---- 录屏工具 ----
+{name:"OBS Studio",desc:"开源免费录屏和直播推流软件，支持多场景切换、滤镜、混音，游戏录制/教学录屏首选",cat:"录屏工具",url:"https://www.qijishow.com/down/OBS%20Studio.html",img:"images/tool-qijishow2025072400782.jpg",bdlink:"https://pan.baidu.com/s/1caDhDrxjaV_WPTEVf_t_2Q?pwd=qiji"},
+// ---- AI 工具 ----
+{name:"Comfy UI",img:"images/tool-8765rbfddsvdv.jpg",desc:"Stable Diffusion 节点式工作流编辑器，精准控制 AI 绘画流程",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/ComfyUI.html",bdlink:"https://pan.baidu.com/s/1J2jJrB0qOAu5xVTpQw_uLQ?pwd=qiji"},
+{name:"Topaz Gigapixel AI",img:"images/tool-QQ20190905-092618@2x.jpg",desc:"AI 智能图片无损放大，最高可放大 6 倍不失真",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/Topaz%20Gigapixel%20AI%20.html",bdlink:"https://pan.baidu.com/s/1P7VbU6-DqbbrpdvnPM78lg?pwd=qiji"},
+{name:"Topaz Video AI",img:"images/tool-QQ20230117-121942@2x.jpg",desc:"AI 视频无损放大软件，支持帧插值和画质增强",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/Topaz%20Video%20AI.html",bdlink:"https://pan.baidu.com/s/16en18FvYiSFB-V_dwt45SQ?pwd=qiji"},
+{name:"Topaz Photo AI",img:"images/tool-QQ20230215-113104@2x.jpg",desc:"AI 智能图像自动降噪、锐化、增强，一站式修图",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/Topaz%20Photo%20AI.html",bdlink:"https://pan.baidu.com/s/1oD3f_u_J9nTeNYdrF0t_BQ?pwd=qiji"},
+{name:"Upscayl",img:"images/tool-QQ20230906-150701@2x.jpg",desc:"开源免费 AI 图像放大增强工具，本地运行，隐私安全",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/Upscayl.html",bdlink:"https://pan.baidu.com/s/1-OZQHqZjqZLrwul288RwIw?pwd=qiji"},
+{name:"KlearMax",img:"images/tool-9887-2024-07-17-233959.jpg",desc:"AI 图片变清晰增强工具，提高分辨率、去噪、锐化",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/KlearMax.html",bdlink:"https://pan.baidu.com/s/1iLn3lItuGcioCqAGuLX7Hg?pwd=qiji"},
+{name:"KleanOut",img:"images/tool-tgvd2024-07-25-10.33.57.jpg",desc:"AI 水印移除、物体移除工具，一键去除不需要的元素",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/KleanOut.html",bdlink:"https://pan.baidu.com/s/1IsZRFiirIoCzQVa-9lEWgA?pwd=qiji"},
+{name:"Spline",img:"images/tool-QQ20210907-133800@2x.jpg",desc:"可交互 3D Web 体验设计工具，AI 辅助 3D 建模",cat:"AI 工具",tag:"ai",url:"https://www.qijishow.com/down/Spline.html",bdlink:"https://pan.baidu.com/s/1w6Hj9AtvWfLcJ7uFlkyzMg?pwd=qiji"},
+
+// ---- 下载工具 ----
+{name:"Downie 4",desc:"Mac 平台最强视频下载工具，支持 YouTube、B站、优酷等 1000+ 网站，一键下载高清视频",cat:"下载工具",tag:"apple",url:"https://www.qijishow.com/down/Downie.html",img:"images/tool-QQ20200318-115053@2x.jpg",bdlink:"https://pan.baidu.com/s/1DII4QIEGXmMcmq_M4LPIZw?pwd=qiji"},
+];
+
+// ===================== 状态 =====================
+let activeCat = '全部';
+let searchQuery = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const saved = localStorage.getItem('prompthub-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  } catch(e) {}
+  renderCategories();
+  renderGallery();
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase();
+    renderGallery();
+  });
+});
+
+function getCategories() {
+  const cats = new Set(RESOURCES.map(r => r.cat));
+  return ['全部', ...Array.from(cats)];
+}
+
+function renderCategories() {
+  const cats = getCategories();
+  document.getElementById('catFilters').innerHTML = cats.map(c =>
+    `<button class="cat-chip${c === activeCat ? ' active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function filterCat(cat) {
+  activeCat = cat;
+  renderCategories();
+  renderGallery();
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('prompthub-theme', next); } catch(e) {}
+}
+
+function renderGallery() {
+  let filtered = RESOURCES;
+  if (activeCat !== '全部') filtered = filtered.filter(r => r.cat === activeCat);
+  if (searchQuery) filtered = filtered.filter(r =>
+    r.name.toLowerCase().includes(searchQuery) || r.desc.toLowerCase().includes(searchQuery) || r.cat.includes(searchQuery)
+  );
+
+  document.getElementById('resultCount').textContent = `${filtered.length} 个资源`;
+  document.getElementById('stats').textContent = `共 ${filtered.length} 个工具 · ${getCategories().length - 1} 个分类`;
+
+  const gallery = document.getElementById('gallery');
+  if (!filtered.length) {
+    gallery.innerHTML = '<div class="empty"><span>📦</span>暂无匹配资源</div>';
+    return;
+  }
+
+  gallery.innerHTML = filtered.map(r => `
+    <div class="card">
+      ${r.img ? `<img src="${r.img}" alt="${escHtml(r.name)}" style="width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px;" loading="lazy">` : `<div style="width:100%;height:160px;border-radius:8px;margin-bottom:10px;background:linear-gradient(135deg,${gradColor(r.name)},${gradColor2(r.name)});display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:700;color:rgba(255,255,255,0.8);">${r.name.charAt(0)}</div>`}
+      <div class="card-title">${escHtml(r.name)}</div>
+      <div class="card-desc">${escHtml(r.desc)}</div>
+      <div class="card-tags">
+        <span class="card-tag">${escHtml(r.cat)}</span>
+        ${r.tag === 'adobe' ? '<span class="card-tag adobe">Adobe</span>' : ''}
+        ${r.tag === 'ai' ? '<span class="card-tag ai">AI</span>' : ''}
+        ${r.tag === 'apple' ? '<span class="card-tag apple">Mac</span>' : ''}
+      </div>
+      <div style="display:flex;gap:6px;">
+        ${r.bdlink ? `<a href="${r.bdlink}" target="_blank" class="card-link" style="flex:1;text-align:center;background:#059669;">📥 百度网盘下载</a>` : r.quark ? `<a href="${r.quark}" target="_blank" class="card-link" style="flex:1;text-align:center;background:#F97316;">📥 夸克网盘下载</a>` : r.xunlei ? `<a href="${r.xunlei}" target="_blank" class="card-link" style="flex:1;text-align:center;background:#2563EB;">📥 迅雷网盘下载</a>` : `<a class="card-link empty" onclick="event.preventDefault();" style="flex:1;text-align:center;">📥 待补充下载链接</a>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+function gradColor(s) { const colors=['#6366F1','#8B5CF6','#EC4899','#F97316','#059669','#DC2626','#2563EB','#7C3AED']; let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffffffff;return colors[Math.abs(h)%colors.length]; }
+function gradColor2(s) { const colors=['#A855F7','#D946EF','#F43F5E','#FB923C','#10B981','#EF4444','#3B82F6','#A78BFA']; let h=0;for(let i=0;i<s.length;i++)h=(h*37+s.charCodeAt(i))&0xffffffff;return colors[Math.abs(h)%colors.length]; }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

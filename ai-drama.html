@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 短剧创作技巧 - 何老师的提示词</title>
+<style>
+:root {
+  --bg: #0a0a10; --card: #12121c; --border: #262638;
+  --text: #e0e0f0; --text2: #9090b0; --text3: #606078;
+  --accent: #8B5CF6; --accent2: #A855F7;
+  --radius: 12px; --font: 'Segoe UI', system-ui, sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f5f5f8; --card: #fff; --border: #e0e0e8;
+  --text: #1a1a2e; --text2: #666680; --text3: #999;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent2); text-decoration: none; }
+
+header {
+  position: sticky; top: 0; z-index: 100; background: var(--card);
+  border-bottom: 1px solid var(--border); padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+header .logo { font-size: 18px; font-weight: 700; white-space: nowrap; }
+header .logo span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+header nav { display: flex; gap: 8px; }
+header nav a { color: var(--text2); font-size: 13px; padding: 6px 10px; border-radius: 6px; transition: all 0.2s; }
+header nav a:hover, header nav a.active { color: var(--text); background: var(--border); }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 16px; margin-left: auto; }
+
+.hero { text-align: center; padding: 48px 20px 32px; max-width: 800px; margin: 0 auto; }
+.hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #F97316, #EC4899, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text2); font-size: 15px; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px; }
+
+.section { margin-bottom: 32px; }
+.section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.section-desc { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.card-header { padding: 16px 18px; cursor: pointer; display: flex; align-items: center; gap: 10px; user-select: none; transition: background 0.2s; }
+.card-header:hover { background: var(--border); }
+.card-icon { font-size: 24px; }
+.card-name { font-weight: 600; font-size: 15px; flex: 1; }
+.card-arrow { color: var(--text3); transition: transform 0.2s; }
+.card.open .card-arrow { transform: rotate(180deg); }
+.card-body { display: none; padding: 0 18px 16px; }
+.card.open .card-body { display: block; }
+.card-body pre { background: #0d0d1a; color: var(--text); padding: 14px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto; max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; font-family: var(--font); }
+.card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.btn { padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: var(--font); transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-outline:hover { border-color: var(--accent); color: var(--text); }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 10px 24px; font-size: 14px; z-index: 999; box-shadow: 0 8px 30px rgba(0,0,0,0.4); animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@media (max-width: 768px) { .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>何老师的提示词</span></div>
+  <nav>
+    <a href="index.html">提示词库</a>
+    <a href="generate.html">AI 生成</a>
+    <a href="ai-drama.html" class="active">短剧技巧</a>
+    <a href="resources.html">共享资源</a>
+    <a href="new-media.html">面试技巧</a>
+    <a href="aigc.html">学习 AIGC</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+</header>
+
+<div class="hero">
+  <h1>AI 短剧创作核心技巧</h1>
+  <p>一套完整的 AI 短剧工作流：角色设计 → 场景搭建 → 剧本改编 → 分镜生成 → 道具提取</p>
+</div>
+
+<div class="container" id="content"></div>
+
+<script>
+// ===================== 数据 =====================
+const SECTIONS = [
+{
+  title: '角色设计',
+  icon: '👤',
+  desc: '从小说/剧本中提炼角色信息，生成标准化 AI 角色卡，确保人物形象统一不崩脸',
+  items: [
+    {name:'角色卡提示词',content:`请帮我生成一个人物角色图，纯白色背景，不参考人物动作和背景内容。身材比例协调，生成全身三视图（正视图、侧视图、后视图）以及一张面部特写（最左边占满三分之一的位置是超大面部特写），图片比例 16：9`},
+    {name:'角色提炼指令（S级）',content:`S级AI短剧人物角色卡提炼专属指令
+你是顶级S级AI短剧人物提炼专家，唯一任务是从提供的小说原文或短剧剧本中，精准提炼所有核心人物信息，最终生成标准化、适配AI真人生成、贴合S级短剧人设的人物角色卡，全程围绕"人设鲜明、信息精准、适配生成、便于拍摄"核心，不添加任何多余内容。
+## 核心提炼原则（必须严格执行，不遗漏关键信息）
+1.  优先提炼核心人物（主角、反派、关键配角），次要路人角色可省略，确保角色卡简洁不冗余，贴合S级短剧"人设鲜明、无多余角色"要求。
+2.  提炼信息必须忠于原文/剧本，不添加主观臆断，不篡改人物性格、身份、核心动机，同时规避原文人名，替换为全新专属人名（规避版权查重）。
+3.  聚焦S级短剧核心人设特质（反差感、记忆点、冲突点），提炼内容围绕"人设标签+核心信息"，便于AI生成统一、不崩脸的人物形象，便于剧本适配。
+4.  人物关系提炼清晰，明确核心人物间的关联（敌对、情侣、亲属等），避免混淆，适配短剧剧情逻辑。
+## 提炼信息范围（必含项，缺一不可）
+### 基础信息（核心必填）
+- 角色姓名：替换后的全新专属姓名（避免与原文重名，规避版权；姓名简洁好记，适配短视频观众记忆）
+- 角色定位：明确标注（主角/反派/关键配角），区分核心与次要
+- 年龄区间：精准标注（如22-25岁、30-35岁），不模糊表述（禁用"年轻、中年"等模糊词汇）
+- 外貌特征：精准、具体，适配AI生成（标注脸型、眉眼、发型、穿搭风格、标志性特征，如"鹅蛋脸、桃花眼、黑长直、职场西装、颈间玉佩"，不笼统描述）
+- 身份背景：简洁提炼核心身份（如"豪门总裁、落魄千金、腹黑反派、隐藏大佬"），不添加冗余背景铺垫，贴合短剧节奏。
+
+### 核心特质（S级人设关键）
+- 性格特质：提炼2-3个核心性格（如"外冷内热、腹黑狠戾、单纯善良、伪善自私"），必须贴合剧情中的人物行为，不矛盾
+- 核心动机：提炼人物行动的核心目的（如"复仇、逆袭、守护某人、争夺权力/财富"），适配短剧冲突逻辑
+- 人设反差（可选，S级爆款加分项）：若人物有反差特质（如"表面卑微舔狗，实则隐藏大佬"），必须重点提炼，突出记忆点
+- 标志性动作/台词：提炼1-2个专属标志性动作或短句（如"习惯性摸袖口玉佩、冷笑说'你还不够格'"），便于AI生成和观众记忆。
+
+### 人物关系（必填）
+- 与核心角色的关联：明确标注（如"主角的复仇对象、反派的跟班、主角的青梅竹马"），简洁清晰，不冗余
+- 核心立场：明确标注（正面/负面/中立），贴合剧情冲突。
+## 角色卡输出格式（严格遵守，标准化呈现）
+每个核心人物单独生成1张角色卡，格式统一，不混乱；多个人物按"主角→反派→关键配角"顺序排列，每两张角色卡之间空一行，便于查看。
+
+### 单张角色卡标准格式
+【角色姓名】：XXX（替换后全新姓名）
+【角色定位】：主角/反派/关键配角
+【年龄区间】：XX-XX岁
+【外貌特征】：XXX（具体、精准，适配AI生成）
+【身份背景】：XXX（简洁核心，不冗余）
+【性格特质】：XXX、XXX、XXX（2-3个核心，不矛盾）
+【核心动机】：XXX（贴合剧情，明确行动目的）
+【人设反差】：XXX（无则写"无"，有则精准提炼）
+【标志性动作/台词】：XXX（1-2个，专属特质）
+【人物关系】：XXX（与核心角色的关联，简洁清晰）
+【核心立场】：正面/负面/中立
+## 禁忌要求（严禁违反，否则视为不合格）
+1.  禁止保留原文人名、地名，所有角色姓名必须替换为全新专属姓名，规避版权查重。
+2.  禁止提炼与剧情无关的人物信息，不添加冗余心理描写、背景铺垫，贴合短剧"简洁高能"要求。
+3.  禁止模糊表述，外貌、年龄、身份、性格等信息必须精准，便于AI生成人物（禁用"长得好看、性格好"等笼统词汇）。
+4.  禁止人物性格、动机与剧情矛盾，提炼内容必须忠于原文/剧本。
+5.  禁止格式混乱，严格按照单张角色卡标准格式输出，角色顺序正确，不遗漏必含项。
+6.  禁止生成路人角色卡，仅提炼核心人物（主角、反派、关键配角），避免冗余。
+## 输出要求
+直接输出提炼后的所有核心人物角色卡，严格按照上述格式、提炼原则、禁忌要求执行，不添加任何多余解释、多余内容。
+提供小说原文或短剧剧本后，先快速梳理核心人物，再逐一生成角色卡，确保信息精准、人设鲜明、适配S级AI短剧生成和剧本适配。`},
+    {name:'角色提示词提取',content:`{
+  "template_name": "短剧人物角色提示词模板",
+  "version": "1.0",
+  "description": "从短剧故事中提取人物信息，输出角色提示词",
+  "system_prompt": "你是影视人物设计师。根据短剧故事，为每个人物输出角色提示词。",
+  "input": "{{短剧故事}}",
+  "output_schema": {
+    "背景分析": {
+      "时代背景": "古代/现代/民国/架空等",
+      "社会阶层": "人物的社会阶层",
+      "剧情人设": "简短的人设描述"
+    },
+    "人物设定": [{
+      "人物": "角色名",
+      "形象定位": { "影视类型": "主角脸/配角脸", "整体气质": "", "参考方向": "" },
+      "五官设计": { "脸型": "", "眉型": "", "眼型": "", "鼻型": "", "唇型": "", "肤色": "", "标志特征": "" },
+      "发型发饰": { "发型": "", "发色": "", "头饰": "" },
+      "服装设计": { "外套": "", "内搭": "", "下装": "", "鞋子": "", "配饰": "", "服装风格说明": "" },
+      "AI绘画提示词": "英文完整提示词"
+    }],
+    "统一性备注": {
+      "脸部一致性关键词": "",
+      "服装一致性说明": "",
+      "同框注意事项": ""
+    }
+  }
+}`},
+  ]
+},
+{
+  title: '场景设计',
+  icon: '🏛️',
+  desc: '统一世界观的场景四视图提示词，确保所有场景风格一致',
+  items: [
+    {name:'场景四视图',content:`【总控前缀・维度 5 场景卡基础参数】
+2×2 四宫格分镜，一套统一世界观场景四视图，严格统一年代感、建筑风格、场景精细度：超写实质感统一精度，匹配参考图画风，全视图统一光影色调、统一材质质感、统一建筑结构逻辑，无年代穿越 BUG，空间透视逻辑闭环，电影级叙事视角，AI 短剧专用场景基准图
+【四视图分视角提示词（四宫格对应 4 格，依次从上到下从左到右）】
+第 1 格：外部外立面正面视角
+建筑外部正面全景视角，完整外立面结构、外观细节、时代装饰元素，开阔室外环境，标准平视透视，清晰完整建筑外形，严格匹配整体建筑风格与年代感
+第 2 格：内部空间视角
+内部完整空间视角，布局、陈设、内饰结构、墙面地面细节，标准室内透视，内部结构与外部建筑完全对应统一，无内外世界观割裂
+第 3 格：高空俯瞰上帝全景视角（全貌交代专用）
+高空垂直俯瞰全景视角，完整俯瞰整个建筑全局全貌、整体占地布局、方位动线、内外空间整体关系，全局空间透视，清晰交代完整世界观空间格局，锁定全场景整体空间比例基准
+第 4 格：背面反面后侧视角
+建筑背面后侧完整视角，墙体厚度、背面轮廓结构、后侧外形细节，建筑形体三维闭环完整，与正面 / 侧面 / 俯瞰空间结构完全对应统一
+【强制一致性约束后缀（必须完整带上，保证场景统一）】
+四视图空间结构完全互相对应统一，全程不变建筑形制、不变年代、不变精细度、不变透视逻辑、不要出现任何人物；高空俯瞰视角锁定全局空间基准；后续所有场景生成均以此四视图为唯一参考基准；禁止结构错乱、禁止年代穿越、禁止画风割裂、禁止透视畸变，电影级稳定场景世界观`},
+    {name:'场景提示词提取',content:`{
+  "template_name": "短剧故事转场景提示词模板",
+  "version": "1.0",
+  "description": "从短剧故事中提取所有场景，统计每个场景的镜头数量，根据故事背景和时代，为每个场景设计AI场景图提示词",
+  "system_prompt": "你是影视美术指导。从短剧故事中提取所有场景，统计每个场景出现的镜头数。根据故事背景、时代、剧情氛围，为每个场景写一份AI场景图提示词。场景图用于建立镜头空间参考，确保同一场景下所有分镜的空间一致性。",
+  "input": "{{改编好的短剧故事}}",
+  "output_schema": {
+    "场景统计": [{"场景名称":"","场景类型":"室内/室外","镜头数量":"X个镜头","重要性":"主场景/次场景/过渡场景"}],
+    "背景分析": {"时代背景":"","地域特征":"","社会阶层":"","剧情氛围":""},
+    "场景设定": [{
+      "场景名称":"",
+      "空间布局": {"空间类型":"","面积感":"","层高":"","格局特点":""},
+      "建筑元素": {"墙面":"","地面":"","天花":"","门窗":"","结构件":""},
+      "家具陈设": {"主要家具":"","次要家具":"","软装布艺":"","装饰品":""},
+      "道具重点": {"剧情关键道具":"","道具位置":"","道具状态":""},
+      "光影设计": {"主光源":"","光影质感":"","整体调性":"","特殊光影":""},
+      "色彩体系": {"主色调":"","辅助色":"","点缀色":"","整体氛围":""},
+      "时代特征": {"年代感":"","风格流派":"","地域文化":""},
+      "场景情绪":"",
+      "AI场景图提示词":"英文描述：空间类型+面积层高+建筑元素+家具陈设+道具重点+光影+色彩+风格+情绪"
+    }],
+    "场景关联": {"空间关系":"","光影连贯":"","风格统一":""}
+  }
+}`},
+  ]
+},
+{
+  title: '剧本改编',
+  icon: '📝',
+  desc: '小说转短剧剧本，二十大爆款开头公式 + 五感衔接技巧 + 压缩删减原则',
+  items: [
+    {name:'小说改剧本（完整版含20大公式）',content:`## 任务说明
+你是一个顶级的小说推文改文专家。你的唯一任务是将小说原文改写为适合短视频配音的"第一人称解说文案"。
+
+## 输出格式规范（必须严格遵守）
+1. 旁白段落：连续书写，段与段之间不空行，每段不超过40字。
+2. 人物台词：必须单独一行，格式为 "角色名：台词内容" 。
+3. 分隔规范：旁白段落结束后，换行空出一行，再写人物台词。
+
+## 爆款开头公式库（根据剧情灵活匹配）
+1. 经典反转钩："我怎么也没想到"起手。适用于重生、穿越、真相揭露。
+2. 极致反差钩：[卑微身份] + [逆天行为/结果]。适用于身份错位、扮猪吃虎、逆袭打脸。
+3. 结局先行钩：[最惨/最燃瞬间] + [倒叙原因]。适用于虐文、复仇、牺牲背叛。
+4. 猎奇悬疑钩：展示诡异、非人的视觉画面。适用于惊悚、灵异、规则怪谈。
+5. 夸张反常钩：用违背常理的行为抓人。适用于亲情虐文、系统文、荒诞。
+6. 荒诞现实钩：极度不合理的逻辑冲突。适用于现实题材、反转、都市情感。
+7. 人性抉择钩：极致的爱恨置换。适用于极致拉扯、虐恋、道德困境。
+8. 身份错位钩：[强弱反转]。适用于马甲文、扮猪吃虎、隐藏大佬。
+9. 悬疑前置钩：开篇即抛出高能悬念，生理刺激+情感暴击+时间压迫三层叠加。
+10. 系统降临钩：[普通身份] + [突然绑定逆天系统]。
+11. 数字反差钩：[具体数字] + [极端结果/反常识结论]。
+12. 身份置换钩：[强势身份] + [被迫进入卑微处境]。
+13. 废柴退婚钩：[天才陨落]+[被当众羞辱]+[暗藏逆袭金手指]。
+14. 宅斗觉醒钩：[庶女/嫡女]+[开局遭陷害]+[反杀名场面]。
+15. 穿越绝境钩：[睁开眼]+[身处生死绝境]+[急智破局]。
+16. 觉醒系统钩：[卑微处境]+[系统突然激活]+[揭露残酷真相]。
+17. 灵宠反套路钩：[觉醒废灵宠]+[全宗嘲笑]+[灵宠实为上古神兽]。
+18. 修炼打脸钩：[被判定为修炼废物]+[三年后]+[碾压全宗强者归来]。
+19. 至尊骨钩：[天生至尊骨]+[被亲人亲手挖走]+[涅槃重生]。
+20. 龙袍加身钩：[被囚禁/被羞辱]+[龙袍突然披身]+[隐藏的皇帝身份曝光]。
+
+## 删减与密度控制
+- 原文3000-4000字 → 改写后1800-2200字（50%-60%）
+- 单段旁白严禁超过40字
+- 删铺垫不删剧情，核心事件、关键对话、人物关系变化完整保留
+- 人物出场即冲突，对话即交锋，行动即结果
+
+## 五感衔接技巧
+- 逻辑：动作/对话/内心活动必须通过五感触发。人物必须先"感知"（看/听/感觉），才能执行"想/说/做"。
+- 起手式：见此情形、看到、目睹、只见、闻言、听到这、听着……说、听见这话。
+
+## 核心禁忌
+- 行为闭环：写完行为必须加"后"字
+- 视角指代：同一视角用"他/她/你"；不同视角必须明确切换名字
+- 去冗余：删除冗余语气词（"的""了""呢""吧"等）
+- 禁止使用原文第一句作为开头
+
+## 输出要求
+直接输出重构后的第一人称解说文案，严格按照输出格式规范执行。首段必须是重构的爆款开头，与原文剧情高度匹配。`},
+    {name:'故事改分镜',content:`{
+  "template_name": "短剧故事转分镜图提示词模板",
+  "version": "3.0",
+  "description": "把改编好的短剧故事转化成电影级分镜提示词",
+  "system_prompt": "你是AI短剧分镜师。把短剧故事拆成8-12个关键画面，每个画面按7个维度写提示词。输出前做整体审查确保连贯性、创意性和爆款逻辑。",
+  "input": "{{改编好的短剧故事}}",
+  "output_schema": {
+    "整体审查": {
+      "故事连贯性": "分镜串联是否讲得通",
+      "创意设计": "最巧妙的设计是什么",
+      "爆款逻辑": "为什么能抓住观众"
+    },
+    "分镜列表": [{
+      "序号": 1,
+      "分镜描述": "这一格拍什么，一句话",
+      "叙事功能": "钩子/铺垫/转折/情绪爆发/悬念",
+      "提示词": "[画面构图：构图方式，景别，运镜，景深] [角色：有无，谁] [人物空间与互动关系：位置关系，距离] [微表情与面部特写：表情细节] [场景环境元素与道具] [光影几何与大气效果：光源方向，光线质感，氛围] [视觉风格：色调风格] [技术参数：焦段，光圈，设备]"
+    }]
+  },
+  "维度说明": {
+    "画面构图": "景别(远景/全景/中景/近景/特写/大特写)+运镜(固定/推/拉/摇/移/跟/升降)+景深",
+    "角色": "有/无，具体是谁，什么动作姿态",
+    "人物空间与互动关系": "人物之间的位置关系、距离、朝向",
+    "微表情与面部特写": "具体的面部表情、眼神、肌肉状态",
+    "场景环境元素与道具": "环境是什么，前景/背景有什么物件",
+    "光影几何与大气效果": "光源方向、光线质感、阴影状态、大气氛围",
+    "视觉风格与技术参数": "色调风格+焦段+光圈+设备"
+  },
+  "审查要求": {
+    "连贯性": "镜头之间动作延续、情绪递进、空间关系不跳脱",
+    "创意": "有视觉记忆点，不是流水账",
+    "爆款逻辑": "前3个镜头有钩子，中间有情绪高点，结尾有悬念或情绪落点"
+  }
+}`},
+  ]
+},
+{
+  title: '道具提取',
+  icon: '🗡️',
+  desc: '从剧本提取核心叙事道具，确保全剧道具视觉统一',
+  items: [
+    {name:'道具提取指令',content:`请从我提供的完整剧本中，严格按照以下规则提取核心叙事道具，禁止提取普通家具、杂物、无关陈设摆件：
+提取标准：仅提取【体现角色个性人设、有象征意义、推动剧情反转/伏笔/爽点、贯穿全剧的核心剧情道具】
+
+提取完成后，按以下固定格式输出，每一项必须完整填写：
+1.道具分类：【人设象征道具 / 剧情推动道具 / 世界观象征道具】
+2.道具名称：
+3.剧本原始描述：直接摘抄剧本原文对道具的描述
+4.史实年代优化：结合场景年代、历史客观事实，优化道具形制，修正穿越、不合理、不符合时代的错误设计
+5.最终规范外形细节：材质、颜色、纹路、磨损、尺寸、标志性识别特征（必须唯一辨识度，防止前后不一致）
+6.人设象征意义：道具对应角色性格、身份、立场
+7.剧情核心作用：道具在伏笔、反转、爽点、剧情推进中的具体作用
+8.全剧一致性要求：本道具全剧外形、纹路、特征完全固定不变，禁止外形修改、禁止凭空消失、禁止凭空新增
+9.垫图生成专用提示词：直接生成可用于垫图参考的完整道具生成提示词，联动人物角色卡画风、场景四视图年代建筑精细度
+
+输出要求：语言专业简洁，不废话；道具前后视觉统一，避免观众识别混乱跳戏、无法理解剧情、产生观看抵触心理。`},
+  ]
+},
+];
+
+// ===================== 渲染 =====================
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('prompthub-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+
+  let html = '';
+  SECTIONS.forEach(sec => {
+    html += `<div class="section"><div class="section-title"><span>${sec.icon}</span> ${sec.title}</div><div class="section-desc">${sec.desc}</div><div class="cards">`;
+    sec.items.forEach((item, i) => {
+      html += `<div class="card" id="card-${sec.title}-${i}">
+        <div class="card-header" onclick="toggleCard('card-${sec.title}-${i}')">
+          <span class="card-icon">📋</span>
+          <span class="card-name">${escHtml(item.name)}</span>
+          <span class="card-arrow">▼</span>
+        </div>
+        <div class="card-body"><pre>${escHtml(item.content)}</pre>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="event.stopPropagation();copyContent('card-${sec.title}-${i}')">📋 复制内容</button>
+        </div></div></div>`;
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('content').innerHTML = html;
+});
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function copyContent(id) {
+  const pre = document.getElementById(id).querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => toast('✅ 已复制到剪贴板'));
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('prompthub-theme', next); } catch(e) {}
+}
+
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2000);
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

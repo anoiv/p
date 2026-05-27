@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面试技巧 - 何老师的提示词</title>
+<style>
+:root {
+    --bg: #F8F9FB; --card-bg: #fff; --text: #1A1A2E; --text2: #6B7280;
+    --border: #E5E7EB; --accent: #6366F1; --tag-bg: #F3F4F6;
+}
+[data-theme="dark"] {
+    --bg: #0F172A; --card-bg: #1E293B; --text: #F1F5F9; --text2: #94A3B8;
+    --border: #334155; --tag-bg: #334155;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+}
+.container { max-width: 900px; margin:0 auto; padding: 0 24px 60px; }
+
+/* Header */
+.page-header {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6, #A855F7, #EC4899);
+    padding: 48px 24px; text-align: center; color: #fff; margin-bottom: 32px;
+}
+.page-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.page-header p { opacity: 0.85; font-size: 15px; }
+.back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,0.8); text-decoration: none;
+    font-size: 14px; margin-bottom: 20px; transition: opacity 0.2s;
+}
+.back-link:hover { opacity: 1; }
+
+/* Section */
+.section-title {
+    font-size: 22px; font-weight: 800; color: var(--accent);
+    margin: 36px 0 16px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+}
+.section-desc { color: var(--text2); font-size: 14px; margin-bottom: 16px; }
+
+/* Q&A Cards */
+.qa-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.qa-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.qa-question {
+    padding: 16px 20px; font-weight: 700; font-size: 15px;
+    cursor: pointer; display: flex; align-items: flex-start; gap: 12px;
+    user-select: none; -webkit-user-select: none;
+}
+.qa-number {
+    flex-shrink: 0; width: 28px; height: 28px;
+    border-radius: 8px; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+}
+.qa-arrow { margin-left: auto; transition: transform 0.3s; color: var(--text2); }
+.qa-card.open .qa-arrow { transform: rotate(180deg); }
+.qa-answer {
+    max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease;
+    font-size: 14px; color: var(--text2); line-height: 1.8;
+    padding: 0 20px 0 60px;
+}
+.qa-card.open .qa-answer { max-height: 500px; padding: 0 20px 20px 60px; }
+
+/* Tips card */
+.tips-card {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    border-radius: 16px; padding: 24px 28px; margin-bottom: 24px;
+    border: 1px solid #FCD34D;
+}
+[data-theme="dark"] .tips-card { background: linear-gradient(135deg, #422006, #713F12); border-color: #92400E; }
+.tips-card h3 { font-size: 16px; margin-bottom: 8px; color: #92400E; }
+[data-theme="dark"] .tips-card h3 { color: #FCD34D; }
+.tips-card ul { padding-left: 20px; font-size: 14px; }
+.tips-card li { margin-bottom: 4px; }
+
+/* Theme toggle */
+.theme-toggle {
+    position: fixed; top: 16px; right: 16px;
+    width: 40px; height: 40px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15);
+    color: #fff; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <a href="index.html" class="back-link">← 返回提示词画廊</a>
+  <h1>📋 面试技巧大全</h1>
+  <p>125+ 道高频面试题 · 含回答框架与示例</p>
+</header>
+
+<div class="container">
+
+<!-- ===== SELF INTRO ===== -->
+<h2 class="section-title">一、自我介绍</h2>
+<div class="tips-card">
+  <h3>💡 回答框架</h3>
+  <ul>
+    <li><b>姓名+年龄</b> → 应聘岗位 + 相关项目业务简述</li>
+    <li><b>项目经验</b> → 相关项目介绍 + 擅长的方向 + 负责过的工作</li>
+    <li><b>结束语</b> → 表达对应聘岗位的热情和信心</li>
+  </ul>
+</div>
+<div class="tips-card">
+  <h3>🔧 技巧建议</h3>
+  <ul>
+    <li>提前浏览面试公司的官网或业务信息，找到与自己简历匹配的内容</li>
+    <li>如实在没有，可以说一些其他非正式的经历，或者直接补充一个简历没有的项目（会成为面试官的追问重点，提前熟悉）</li>
+    <li>毕业以来的工作概述：简述公司所属行业（教育、游戏、食品、服饰等）</li>
+    <li>最近一份工作公司简介可参考招聘网站的公司介绍</li>
+    <li>项目概述说项目类别（如：图形化编程社区、教育培训业务系统、微信商城等），贴合面试公司的业务线先说</li>
+    <li>擅长技术方向要对应招聘信息里的岗位要求</li>
+  </ul>
+</div>
+
+<!-- ===== Q&A SECTION 1 ===== -->
+<h2 class="section-title">二、项目经验与困难解决</h2>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>谈谈你过去的工作经验中，遇到的项目困难有哪些，你怎么解决的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">选择 1-2 个具体案例，按照 STAR 法则回答：<b>S</b>ituation（背景）、<b>T</b>ask（任务）、<b>A</b>ction（行动）、<b>R</b>esult（结果）。重点突出你做了什么、学到了什么、如何推动项目前进。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>你的职业规划是什么？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">回答框架：短期（1-2年）→ 快速融入团队、掌握业务、在岗位上做出成绩；中期（3-5年）→ 成为该领域的专家或技术骨干，能够独立负责项目；长期 → 结合公司发展，在技术/管理方向持续成长。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">3</span>你为什么离开上一家公司？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">回答原则：不抱怨前公司/前领导/前同事。从自身发展角度出发，如：寻求更大的挑战、希望接触新的业务领域、技术栈方向调整、公司业务调整与个人规划不符等。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">4</span>你最大的优点和缺点是什么？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer"><b>优点</b>：选一个与岗位匹配的优点，举例说明。如：学习能力强（举例快速上手新技术）、沟通协调能力好（举例跨部门协作成功案例）。<br><b>缺点</b>：选一个真实但不致命的缺点，并说明你在如何改进。如：有时候过于追求细节导致进度偏慢，现在会通过制定优先级和时间管理来改善。</div>
+</div>
+
+<h2 class="section-title">三、为人处事、人际交往</h2>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">5</span>你在面对不同层次或不同背景的人员时如何调整你的沟通风格？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会根据对方的背景和层次调整沟通方式和用词。对于高级管理人员，我会更加强调战略性和商业价值；对于基层员工，我会更加注重清晰度和实用性。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">6</span>你是如何向团队传达目标和愿景的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会通过团队会议、一对一会议或邮件等多种渠道向团队传达目标和愿景。我会强调团队的重要性和每个成员的贡献，并激励他们共同努力实现共同的目标。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">7</span>你在处理敏感信息或困难话题时如何保持适当的沟通？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会尊重敏感信息的隐私性，并确保仅与需要知道的人员分享。我也会保持冷静和专业，并尽量避免引发冲突或不必要的争论，以保持沟通的顺利进行。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">8</span>你是如何处理工作中的竞争与合作的平衡？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我认为竞争和合作是相辅相成的。我会竭尽所能地努力工作，并尊重同事的工作成果。同时，我也会愿意与他人分享经验和资源，并与团队共同努力，实现共同的目标。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">9</span>你如何与不同个性的同事合作？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我相信尊重和理解是有效合作的关键。我会尽量了解每个同事的个性特点和工作风格，并灵活调整自己的沟通方式和工作方法，以更好地与他们协作。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">10</span>你是如何处理工作压力和紧急情况的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我通常会保持冷静，并优先处理最重要的任务。我会制定一个清晰的计划，并与团队成员协作，以确保任务能够按时完成。在面对压力时，我也会找一些放松的方式来缓解压力，保持良好的工作状态。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">11</span>你如何处理与客户或合作伙伴的关系？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我认为建立良好的客户关系是成功的关键之一。我会积极倾听客户的需求和反馈，并尽力满足他们的期望。我也会保持及时的沟通，并在解决问题时保持专业和耐心。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">12</span>你如何处理工作中的失误？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会诚实地承认错误，并立即采取措施进行纠正。我会从失误中吸取教训，并寻找改进的方法，以确保类似的问题不再发生。我也会寻求团队的支持，并与他们共同解决挑战。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">13</span>你是如何处理团队中的不和谐氛围的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会主动与涉及的成员进行私下沟通，了解问题的根源，并寻求解决方案。我会提倡开放的交流和合作，鼓励成员解决分歧，并在团队内建立和谐的工作氛围。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">14</span>你是如何处理工作中的紧急情况和意外事件的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会迅速作出反应，优先安排工作并制定应对计划。我会与团队成员协作，分工合作，以最快的速度解决问题，并及时向相关方汇报情况。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">15</span>你是如何与新同事或新团队成员建立联系的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">我会积极主动地向新同事或新团队成员介绍自己，并表达对合作的期待和愿望。我会主动提供帮助和支持，以促进彼此之间的了解和信任，共同达成团队的目标。</div>
+</div>
+
+<h2 class="section-title">四、职场软技能</h2>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">16</span>如何在职场中建立信任关系？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">建立信任关系是职场成功的关键之一：<br>① <b>坦诚沟通</b>：与同事和上级保持开放、诚实和透明的沟通，避免隐瞒信息或撒谎。<br>② <b>履行承诺</b>：一旦做出承诺，就要尽力实现，言出必行能够赢得他人的信任和尊重。<br>③ <b>尊重他人</b>：尊重每个人的观点和贡献，不轻易批评或贬低他人。<br>④ <b>分享信息</b>：主动分享有关项目和团队的信息，让同事了解你的进展和工作成果。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">17</span>如何在职场中保持积极的态度？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">保持积极态度的方法：关注解决问题而非抱怨；寻找工作中的意义和成就感；与积极向上的同事交往；合理安排工作与生活，避免过度疲劳；持续学习新知识，保持成长心态。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">18</span>如何在职场中与不同性格的人相处？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">关键策略：观察和了解对方的性格特点（内向/外向、细节型/大局型）；灵活调整沟通风格；找到共同目标和利益；保持耐心和同理心；避免贴标签或预设偏见。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">19</span>如何在职场中建立良好的第一印象？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">准备要点：着装得体、准时到场；准备简洁的自我介绍；保持微笑和眼神交流；积极主动但不咄咄逼人；提前了解公司和岗位信息；展现出专业素养和团队合作精神。</div>
+</div>
+
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">20</span>如何在职场中处理与上司的关系？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">关键原则：主动汇报工作进展，不要等上司来问；了解上司的工作风格和期望；在提出问题时同时准备解决方案；尊重上司的决策权，即使有不同意见也要先执行再反馈；建立互信关系，成为可靠的下属。</div>
+</div>
+
+
+<!-- ===== NEW MEDIA ===== -->
+<h2 class="section-title">五、新媒体 / 直播电商面试题</h2>
+<p class="section-desc">涵盖人资面、投流（千川）、店铺运营、直播运营、中控等岗位高频问题</p>
+
+<h3 style="font-size:17px;color:var(--accent);margin:24px 0 12px;font-weight:700;">📌 人资问题</h3>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>你主要运营哪些平台？做什么行业？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">明确自己运营过的平台（抖音、快手、小红书、视频号等）和行业（教育、服饰、食品、美妆等），聚焦与面试公司相关的经验。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>离职原因分别是什么？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">参考前面通用面试技巧中的离职原因回答原则，从个人发展角度出发，不抱怨前公司。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">3</span>之前运营工作的日常内容？有没有记忆深刻或棘手的问题？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">准备 1-2 个具体案例：日常运营流程（选品→上架→推广→数据分析→复盘），以及处理过的具体困难（如某次活动转化率低如何优化）。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">4</span>用过ERP系统吗？用过哪些？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">如实回答。常用的有：旺店通、聚水潭、万里牛、管家婆等。强调能快速上手新系统。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">5</span>选品方面有接触吗？在哪里选的？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">说明选品渠道：抖音精选联盟、1688、拼多多供应链、线下档口等。强调选品逻辑：看数据（销量/评价/佣金）、看趋势、看竞品。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">6</span>和同事/领导有意见分歧怎么办？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">用数据说话，拿测试结果验证。尊重对方意见，先倾听再表达，求同存异，以业务目标为导向。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">7</span>你的优缺点？对加班的看法？职业规划？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">参考通用面试技巧中的对应问题的回答框架。新媒体行业需强调抗压能力和快速学习能力。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">8</span>你了解我们公司情况吗？期望薪资？多久能入职？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">面试前必查：公司主营业务、账号矩阵、近期动态。薪资说范围不下限，入职时间如实回答（在职需交接，离职可快速到岗）。</div>
+</div>
+
+<h3 style="font-size:17px;color:var(--accent);margin:24px 0 12px;font-weight:700;">📈 千川投流问题</h3>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>介绍一下千川投流的项目数据或比较好的结果<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">准备具体数据：月消耗、ROI、GMV、CPM、点击率等核心指标。能说出关键优化动作和对应的数据变化。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>投放人群不精准，从什么维度判断？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">看点击率、转化率、投产比、人群画像与目标用户匹配度、评论互动质量等。投产低、有点击无转化通常是人群不准。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">3</span>从0到1跑一个新户，模型要跑多久？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">一般 3-7 天跑出基础模型。第 1 天测试素材和出价，第 2-3 天筛选优质计划，第 4-7 天放量。关键是素材质量和人群包精准度。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">4</span>每天 6 万消耗，素材产出怎么对接？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">描述素材需求流程：分析跑量素材特征 → 输出素材brief → 对接剪辑/拍摄团队 → 审核素材 → 测试 → 复盘。强调素材数量和质量的平衡。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">5</span>GMV达不到目标怎么优化？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">从四个维度排查：①人（主播话术/状态）②货（产品/价格/SKU）③场（直播间场景/氛围）④流量（投流精准度/素材质量），逐层优化。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">6</span>消耗对比昨天同时段掉了50%，怎么排查？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">排查顺序：①计划是否被限流/审核 ②出价是否需要调整 ③素材是否衰退 ④大盘竞争环境变化 ⑤直播间数据是否下滑导致系统减少推流。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">7</span>千川计划如何做定向？莱卡定向用哪些关键词？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">定向方式：行为兴趣（莱卡）、达人定向、人群包、系统推荐。莱卡关键词围绕品类词、场景词、人群词、竞品词等搭建词包矩阵。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">8</span>给你一个直播间你怎么做投放？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">先了解：产品、客单价、目标人群、直播间节奏。然后：搭建计划结构 → 测试素材 → 观察数据 → 优化出价和定向 → 放量。分阶段：冷启动期→成长期→成熟期。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">9</span>影响投产的方面有哪些？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">①素材质量（CTR/CVR）②人群精准度 ③出价策略 ④直播间承接能力（主播/场景/产品）⑤竞品投放力度 ⑥大盘节点（大促/节假日）。</div>
+</div>
+
+<h3 style="font-size:17px;color:var(--accent);margin:24px 0 12px;font-weight:700;">🏪 店铺运营问题</h3>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>店铺分数怎么维护？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">关注三项评分：商品体验分（品质退款率）、物流体验分（发货速度）、服务体验分（响应速度/投诉率）。日常监控差评和退货原因，及时优化。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>达人对接工作流程？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">筛选达人（看粉丝画像/带货数据）→ 建联（私信/团长/机构）→ 寄样 → 跟进直播排期 → 直播盯盘 → 复盘数据 → 维护长期关系。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">3</span>达人层级及佣金设置？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">头部达人：纯佣/坑位费+佣金，腰部达人：阶梯佣金机制，尾部达人/KOC：纯佣或低佣金。根据产品毛利灵活设置。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">4</span>退费率高的店铺口碑分怎么优化？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">分析退货原因：①产品质量→优化供应链 ②描述不符→优化详情页/主图 ③尺码问题→完善尺码表 ④物流破损→改善包装。针对原因专项优化。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">5</span>搜索自然流成交占比？怎么分析产品人群？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">通过抖音电商罗盘查看搜索成交占比。分析产品人群：看成交用户画像（年龄/性别/地域/消费力），对标竞品人群，用千川测试不同人群包转化。</div>
+</div>
+
+<h3 style="font-size:17px;color:var(--accent);margin:24px 0 12px;font-weight:700;">🎥 直播运营问题</h3>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>直播间人员架构？日常主要负责哪些工作？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">架构：主播 → 助播/场控 → 中控 → 运营 → 投手。日常：排品排期、直播盯盘、数据复盘、话术优化、投放调整、竞品监控。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>自播和达播占比？一天播多久？有无倒班？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">如实说明自播和达播的GMV占比。通常品牌自播每天6-16小时，分早晚班。倒班制度要看团队规模和主播数量。</div>
+</div>
+
+<h3 style="font-size:17px;color:var(--accent);margin:24px 0 12px;font-weight:700;">🎛️ 中控运营问题</h3>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">1</span>直播间账号名称？什么时候直播？有几个直播间？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">准备之前负责的直播间名称和开播时间。如果多个直播间，说明各自的定位和差异化。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">2</span>直播间做付费流还是自然流？用什么设备？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">说明流量结构：纯自然流/微付费/强付费。设备：直播手机/电脑、补光灯、声卡、麦克风、绿幕等。根据直播类型配置不同设备。</div>
+</div>
+<div class="qa-card" onclick="this.classList.toggle('open')">
+  <div class="qa-question"><span class="qa-number">3</span>直播间有多少个SKU？<span class="qa-arrow">▾</span></div>
+  <div class="qa-answer">单品直播间 vs 多品直播间策略不同。单品聚焦深度讲解，多品需要设计过品节奏和排品顺序。</div>
+</div>
+
+</div>
+
+<script>
+// Theme
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+</script>
+</body>
+</html>

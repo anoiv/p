@@ -1,0 +1,74 @@
+name: 提交新提示词
+description: 分享你的 AI 提示词，跟大家一起来讨论
+title: "[投稿] "
+labels: ["prompt-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 提交新提示词
+        感谢分享！填写以下信息提交你的提示词。
+
+  - type: input
+    id: title
+    attributes:
+      label: 提示词标题
+      description: 给这个提示词起一个简短的名字
+      placeholder: 例如：赛博朋克电影感肖像
+    validations:
+      required: true
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: 提示词内容
+      description: 粘贴完整的提示词文本
+      placeholder: 在这里粘贴你的提示词...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 分类
+      options:
+        - 产品摄影
+        - 电影人像
+        - 动漫风格
+        - 插画艺术
+        - UI设计
+        - LOGO设计
+        - 3D渲染
+        - 极简风格
+        - 电影短片
+        - 音乐MV
+        - 创意短片
+        - 治愈日常
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: images
+    attributes:
+      label: 参考图片或视频
+      description: 拖拽图片/视频到此处上传（支持 jpg/png/gif/mp4）
+      placeholder: 拖拽文件到这里
+    validations:
+      required: false
+
+  - type: input
+    id: author
+    attributes:
+      label: 你的名字/昵称
+      placeholder: 例如：何老师
+    validations:
+      required: false
+
+  - type: input
+    id: source
+    attributes:
+      label: 来源链接（选填）
+      placeholder: 如果有参考来源，粘贴链接
+    validations:
+      required: false

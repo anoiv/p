@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 图像/视频生成 - 何老师的提示词</title>
+<style>
+:root {
+  --bg: #0a0a10; --card: #12121c; --border: #262638;
+  --text: #e0e0f0; --text2: #9090b0; --text3: #606078;
+  --accent: #8B5CF6; --accent2: #A855F7; --red: #EF4444; --green: #10B981;
+  --radius: 12px; --font: 'Segoe UI', system-ui, sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f5f5f8; --card: #fff; --border: #e0e0e8;
+  --text: #1a1a2e; --text2: #666680; --text3: #999;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent2); }
+
+/* Header */
+header {
+  display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+header .logo { font-size: 18px; font-weight: 700; }
+header .logo span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+header nav { display: flex; gap: 12px; margin-left: auto; align-items: center; }
+header nav a { color: var(--text2); text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; }
+header nav a:hover, header nav a.active { color: var(--text); background: var(--border); }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 16px; }
+
+/* Layout */
+.container { max-width: 1300px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 480px 1fr; gap: 24px; }
+@media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+/* Panels */
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.panel h2 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* Form elements */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+.field select, .field input[type="text"], .field input[type="password"], .field textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: var(--font); background: var(--bg); color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.field select:focus, .field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.field small { font-size: 11px; color: var(--text3); margin-top: 2px; display: block; }
+
+/* Type toggle */
+.type-toggle { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+.type-toggle button {
+  flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer;
+  font-size: 13px; font-weight: 500; font-family: var(--font);
+  background: transparent; color: var(--text2); transition: all 0.2s;
+}
+.type-toggle button.active { background: var(--accent); color: #fff; }
+
+/* Upload area */
+.upload-area {
+  border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px;
+  text-align: center; cursor: pointer; transition: border-color 0.2s;
+  margin-bottom: 14px; position: relative;
+}
+.upload-area:hover { border-color: var(--accent); }
+.upload-area.has-image { padding: 8px; }
+.upload-area img { max-width: 100%; max-height: 200px; border-radius: 8px; display: block; margin: 0 auto; }
+.upload-area .placeholder { color: var(--text3); font-size: 13px; }
+.upload-area .remove-img {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--red); color: #fff; border: none; width: 24px; height: 24px;
+  border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; display: none;
+}
+.upload-area.has-image .remove-img { display: flex; align-items: center; justify-content: center; }
+
+/* Params row */
+.param-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Buttons */
+.btn {
+  padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  font-family: var(--font); cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; width: 100%; padding: 14px; font-size: 15px; }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+/* API key visibility */
+.api-key-wrap { position: relative; }
+.api-key-wrap input { padding-right: 40px; }
+.api-key-wrap .toggle-vis {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text3);
+}
+
+/* Result panel */
+#resultArea { display: flex; flex-direction: column; gap: 16px; }
+#resultDisplay { min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text3); }
+#resultDisplay img, #resultDisplay video { max-width: 100%; border-radius: var(--radius); }
+.result-actions { display: flex; gap: 8px; }
+.result-actions button { flex: 1; }
+
+/* Progress */
+.progress-wrap { margin: 16px 0; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 3px; width: 0%; transition: width 0.5s; }
+.progress-text { font-size: 12px; color: var(--text2); text-align: center; margin-top: 6px; }
+
+/* History */
+.history-item {
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s;
+  display: flex; gap: 10px; align-items: center;
+}
+.history-item:hover { border-color: var(--accent); }
+.history-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
+.history-item .info { flex: 1; min-width: 0; }
+.history-item .info .prompt { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-item .info .meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* Error */
+.error-msg { padding: 12px; border-radius: 8px; background: #FEE2E2; color: #DC2626; font-size: 13px; }
+[data-theme="dark"] .error-msg { background: #7F1D1D; color: #FCA5A5; }
+.success-msg { padding: 12px; border-radius: 8px; background: #D1FAE5; color: #059669; font-size: 13px; }
+[data-theme="dark"] .success-msg { background: #064E3B; color: #6EE7B7; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+  padding: 10px 24px; font-size: 14px; z-index: 999;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4); animation: toastIn 0.3s ease;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* Spinner */
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>何老师的提示词</span></div>
+  <nav>
+    <a href="index.html">提示词库</a>
+    <a href="generate.html" class="active">AI 生成</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="切换主题">🌓</button>
+  </nav>
+</header>
+
+<div class="container">
+  <!-- 左侧：输入面板 -->
+  <div>
+    <div class="panel">
+      <h2>✨ AI 图像/视频生成</h2>
+
+      <div class="type-toggle" id="typeToggle">
+        <button class="active" data-type="image">🖼️ 图像生成</button>
+        <button data-type="video">🎬 视频生成</button>
+      </div>
+
+      <div class="field">
+        <label>模型</label>
+        <select id="modelSelect"></select>
+      </div>
+
+      <div class="field" id="sizeField">
+        <label>尺寸</label>
+        <select id="sizeSelect"></select>
+      </div>
+      <div class="field" id="aspectField" style="display:none;">
+        <label>宽高比</label>
+        <select id="aspectSelect"></select>
+      </div>
+      <div class="field" id="imgSizeField" style="display:none;">
+        <label>分辨率</label>
+        <select id="imgSizeSelect"></select>
+      </div>
+      <div class="field" id="ratioField" style="display:none;">
+        <label>画面比例</label>
+        <select id="ratioSelect"></select>
+      </div>
+      <div class="field" id="durationField" style="display:none;">
+        <label>时长（秒）</label>
+        <select id="durationSelect"></select>
+      </div>
+
+      <div class="field">
+        <label>提示词</label>
+        <textarea id="promptInput" placeholder="描述你想要生成的图像或视频内容...&#10;&#10;例如：一只金色的小狗在阳光下的麦田里奔跑，电影质感，4K"></textarea>
+      </div>
+
+      <div class="field">
+        <label>参考图片（可选，支持多张）</label>
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="placeholder">📁 点击上传参考图片（可多选）</div>
+          <div class="upload-previews" id="uploadPreviews" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <button class="remove-img" onclick="event.stopPropagation(); clearUpload()">✕</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;" onchange="handleUpload(event)">
+      </div>
+
+      <div class="field">
+        <label>API Token</label>
+        <div class="api-key-wrap">
+          <input type="password" id="apiKeyInput" placeholder="输入你的 API Token">
+          <button class="toggle-vis" onclick="toggleApiKeyVis()">👁</button>
+        </div>
+        <small>Token 仅保存在你的浏览器中，不会上传到任何服务器。</small>
+      </div>
+
+      <button class="btn btn-primary" id="genBtn" onclick="startGeneration()">
+        ⚡ 开始生成
+      </button>
+      <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">排队中...</div>
+      </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="panel" style="margin-top:16px;">
+      <h2>📋 生成历史</h2>
+      <div id="historyList" style="max-height:300px;overflow-y:auto;">
+        <p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">暂无记录</p>
+      </div>
+      <button class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="clearHistory()">清空历史</button>
+    </div>
+  </div>
+
+  <!-- 右侧：结果面板 -->
+  <div class="panel" id="resultPanel">
+    <h2>📺 生成结果</h2>
+    <div id="resultDisplay">
+      <p style="color:var(--text3);">输入提示词并点击生成，结果将显示在这里</p>
+    </div>
+    <div class="result-actions" id="resultActions" style="display:none;">
+      <button class="btn btn-primary" onclick="downloadResult()">💾 下载</button>
+      <button class="btn btn-outline" onclick="copyResult()">📋 复制到剪贴板</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== 全局状态 =====================
+const API_BASE = 'https://prompt-gallery-proxy.anongg.workers.dev/v1';
+let genType = 'image';
+let currentModel = null;
+let uploadedImages = [];
+let lastResult = null;
+let pollingTimer = null;
+
+// ===================== 模型定义 =====================
+const MODELS = {
+  image: [
+    { id: 'gpt-image-2-vip', name: 'GPT Image 2 VIP', sizes: ['1024x1024','1024x1792','1792x1024','1280x720','720x1280','2048x2048','2048x1152','1152x2048'], defaultSize: '1024x1024', api: 'dalle' },
+    { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro 图像', aspects: ['1:1','16:9','9:16','4:3','3:4'], imgSizes: ['1K','2K','4K'], defaultAspect: '16:9', defaultImgSize: '2K', api: 'chat' },
+    { id: 'nano-banana-2-2k', name: 'Nano Banana 2K', aspects: ['1:1','16:9','9:16','4:3','3:4'], imgSizes: ['2K'], defaultAspect: '1:1', defaultImgSize: '2K', api: 'chat' },
+  ],
+  video: [
+    { id: 'doubao-seedance-2-0-260128', name: 'Seedance 2.0（高质量）', ratios: ['16:9','9:16','1:1','4:3','3:4','21:9'], durations: [4,5,6,8,10,15], defaultRatio: '16:9', defaultDuration: 5 },
+    { id: 'doubao-seedance-2-0-fast-260128', name: 'Seedance 2.0 Fast（快速）', ratios: ['16:9','9:16','1:1','4:3','3:4'], durations: [4,5,6,8,10,15], defaultRatio: '16:9', defaultDuration: 5 },
+  ]
+};
+
+// ===================== 初始化 =====================
+document.addEventListener('DOMContentLoaded', () => {
+  // 主题
+  const saved = localStorage.getItem('generate-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches && !saved) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  // API Key
+  const savedKey = localStorage.getItem('gen-api-token');
+  if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+  // 类型切换
+  document.querySelectorAll('#typeToggle button').forEach(btn => {
+    btn.addEventListener('click', () => switchType(btn.dataset.type));
+  });
+  switchType('image');
+  // 历史
+  renderHistory();
+});
+
+function switchType(type) {
+  genType = type;
+  document.querySelectorAll('#typeToggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === type);
+  });
+  // 更新模型列表
+  const sel = document.getElementById('modelSelect');
+  const models = MODELS[type];
+  sel.innerHTML = models.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  onModelChange();
+}
+
+function onModelChange() {
+  const id = document.getElementById('modelSelect').value;
+  currentModel = (MODELS[genType] || []).find(m => m.id === id);
+  if (!currentModel) return;
+
+  const isImage = genType === 'image';
+  const isVideo = genType === 'video';
+
+  document.getElementById('sizeField').style.display = (isImage && currentModel.sizes) ? '' : 'none';
+  document.getElementById('aspectField').style.display = (isImage && currentModel.aspects) ? '' : 'none';
+  document.getElementById('imgSizeField').style.display = (isImage && currentModel.imgSizes) ? '' : 'none';
+  document.getElementById('ratioField').style.display = (isVideo && currentModel.ratios) ? '' : 'none';
+  document.getElementById('durationField').style.display = (isVideo && currentModel.durations) ? '' : 'none';
+
+  if (currentModel.sizes) popSel('sizeSelect', currentModel.sizes, currentModel.defaultSize);
+  if (currentModel.aspects) popSel('aspectSelect', currentModel.aspects, currentModel.defaultAspect);
+  if (currentModel.imgSizes) popSel('imgSizeSelect', currentModel.imgSizes, currentModel.defaultImgSize);
+  if (currentModel.ratios) popSel('ratioSelect', currentModel.ratios, currentModel.defaultRatio);
+  if (currentModel.durations) popSel('durationSelect', currentModel.durations, String(currentModel.defaultDuration));
+}
+
+function popSel(id, opts, def) {
+  document.getElementById(id).innerHTML = opts.map(o => `<option value="${o}" ${o===def?'selected':''}>${o}</option>`).join('');
+}
+
+document.getElementById('modelSelect').addEventListener('change', onModelChange);
+
+// ===================== 上传 =====================
+function handleUpload(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  const area = document.getElementById('uploadArea');
+  const previews = document.getElementById('uploadPreviews');
+  area.classList.add('has-image');
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      uploadedImages.push(ev.target.result);
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:6px;';
+      previews.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+  area.querySelector('.placeholder').textContent = `${uploadedImages.length + files.length} 张参考图`;
+  document.getElementById('fileInput').value = '';
+}
+
+function clearUpload() {
+  uploadedImages = [];
+  const area = document.getElementById('uploadArea');
+  area.classList.remove('has-image');
+  area.querySelector('.placeholder').textContent = '📁 点击上传参考图片（可多选）';
+  document.getElementById('uploadPreviews').innerHTML = '';
+  document.getElementById('fileInput').value = '';
+}
+
+// ===================== 生成 =====================
+async function startGeneration() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt) return toast('⚠️ 请输入提示词');
+  if (!currentModel) return toast('⚠️ 请选择模型');
+
+  let apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) return toast('⚠️ 请输入 API Token');
+  localStorage.setItem('gen-api-token', apiKey);
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 提交中...';
+  document.getElementById('resultDisplay').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('resultActions').style.display = 'none';
+  hideProgress();
+
+  try {
+    if (genType === 'image') {
+      await generateImage(prompt, apiKey);
+    } else {
+      await generateVideo(prompt, apiKey);
+    }
+  } catch (e) {
+    document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ ${escHtml(e.message)}</div>`;
+    toast('生成失败: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ 开始生成';
+  }
+}
+
+async function generateImage(prompt, apiKey) {
+  const headers = { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 300000);
+  showProgress(30, '正在生成图像...');
+
+  let resp, data;
+  if (currentModel.api === 'dalle') {
+    const payload = { model: currentModel.id, prompt: prompt, n: 1 };
+    if (currentModel.sizes) payload.size = document.getElementById('sizeSelect').value;
+    resp = await fetch(API_BASE + '/images/generations', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+    data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
+    const images = (data.data || []).map(d => d.url || d.b64_json).filter(Boolean);
+    if (!images.length) throw new Error('API 未返回图像');
+    showResult({ type:'image', urls: images, model: currentModel.id, prompt });
+  } else {
+    const msgContent = uploadedImages.length
+      ? [...uploadedImages.map(u => ({ type: 'image_url', image_url: { url: u } })), { type: 'text', text: prompt }]
+      : prompt;
+    const payload = {
+      model: currentModel.id, max_tokens: 4096,
+      messages: [{ role: 'user', content: msgContent }],
+      image_config: { aspect_ratio: document.getElementById('aspectSelect').value, image_size: document.getElementById('imgSizeSelect').value },
+    };
+    resp = await fetch(API_BASE + '/chat/completions', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+    data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
+    const images = extractImages(data);
+    if (!images.length) throw new Error('API 未返回图像');
+    showResult({ type:'image', urls: images, model: currentModel.id, prompt });
+  }
+  clearTimeout(timer);
+  hideProgress();
+}
+
+async function generateVideo(prompt, apiKey) {
+  showProgress(10, '提交任务...');
+  const headers = { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' };
+  const payload = {
+    model: currentModel.id, prompt: prompt,
+    ratio: document.getElementById('ratioSelect').value,
+    duration: parseInt(document.getElementById('durationSelect').value),
+    watermark: false,
+  };
+
+  const resp = await fetch(API_BASE + '/video/generations', { method:'POST', headers, body: JSON.stringify(payload) });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || '提交失败');
+  const taskId = data.task_id || data.id;
+  if (!taskId) throw new Error('未获取到任务 ID');
+  startPolling(taskId, apiKey);
+}
+
+function startPolling(taskId, apiKey) {
+  if (pollingTimer) clearInterval(pollingTimer);
+  let count = 0;
+  pollingTimer = setInterval(async () => {
+    count++;
+    try {
+      const resp = await fetch(`${API_BASE}/video/generations/${taskId}`, {
+        headers: { 'Authorization': 'Bearer ' + apiKey }
+      });
+      const data = await resp.json();
+      const status = data.status;
+      const progMap = { 'queued': 15, 'processing': 60, 'completed': 100, 'succeeded': 100 };
+      const txtMap = { 'queued': '排队中...', 'processing': '生成中...', 'completed': '完成!', 'succeeded': '完成!', 'failed': '失败' };
+      showProgress(progMap[status] || (20 + count * 3), txtMap[status] || status);
+
+      if (status === 'completed' || status === 'succeeded') {
+        clearInterval(pollingTimer); pollingTimer = null;
+        const url = data.video_url || data.url;
+        if (url) {
+          showResult({ type:'video', urls:[url], model: currentModel.id, prompt: document.getElementById('promptInput').value.trim() });
+          hideProgress();
+          toast('✅ 视频生成完成');
+        }
+      } else if (status === 'failed' || status === 'error') {
+        clearInterval(pollingTimer); pollingTimer = null; hideProgress();
+        throw new Error(data.error || '视频生成失败');
+      }
+      if (count > 200) { clearInterval(pollingTimer); pollingTimer = null; hideProgress(); throw new Error('轮询超时'); }
+    } catch (e) {
+      clearInterval(pollingTimer); pollingTimer = null; hideProgress();
+      document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ ${escHtml(e.message)}</div>`;
+    }
+  }, 5000);
+}
+
+// ===================== 结果展示 =====================
+function showResult(result) {
+  lastResult = result;
+  const div = document.getElementById('resultDisplay');
+  if (result.type === 'image') {
+    div.innerHTML = result.urls.map(u => `<img src="${u}" alt="生成结果" style="max-width:100%;border-radius:12px;margin-bottom:8px;">`).join('');
+  } else {
+    div.innerHTML = result.urls.map(u => `<video src="${u}" controls style="width:100%;border-radius:12px;background:#000;"></video>`).join('');
+  }
+  document.getElementById('resultActions').style.display = 'flex';
+  // 持久化当前结果，刷新不丢失
+  try { localStorage.setItem('gen-last-result', JSON.stringify(result)); } catch(e) {}
+  saveHistory(result);
+  renderHistory();
+}
+
+// 页面加载时恢复上次结果
+(function() {
+  try {
+    const saved = localStorage.getItem('gen-last-result');
+    if (saved) {
+      lastResult = JSON.parse(saved);
+      const div = document.getElementById('resultDisplay');
+      if (lastResult.type === 'image') {
+        div.innerHTML = lastResult.urls.map(u => `<img src="${u}" alt="" style="max-width:100%;border-radius:12px;">`).join('');
+      } else if (lastResult.type === 'video') {
+        div.innerHTML = lastResult.urls.map(u => `<video src="${u}" controls style="width:100%;border-radius:12px;background:#000;"></video>`).join('');
+      }
+      document.getElementById('resultActions').style.display = 'flex';
+    }
+  } catch(e) {}
+  renderHistory();
+})();
+
+function downloadResult() {
+  if (!lastResult) return;
+  const ext = lastResult.type === 'image' ? 'png' : 'mp4';
+  lastResult.urls.forEach((url, i) => {
+    if (url.startsWith('data:')) {
+      const a = document.createElement('a'); a.href = url; a.download = `generated-${Date.now()}.${ext}`; a.click();
+    } else {
+      window.open(url, '_blank');
+    }
+  });
+}
+
+async function copyResult() {
+  if (!lastResult) return;
+  if (lastResult.type === 'image' && lastResult.urls[0].startsWith('data:')) {
+    try {
+      const resp = await fetch(lastResult.urls[0]);
+      const blob = await resp.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      toast('✅ 已复制到剪贴板');
+    } catch (e) {
+      toast('⚠️ 复制失败，请用下载');
+    }
+  } else {
+    await navigator.clipboard.writeText(lastResult.urls[0]);
+    toast('✅ URL 已复制');
+  }
+}
+
+// ===================== 进度条 =====================
+function showProgress(pct, text) {
+  document.getElementById('progressWrap').style.display = '';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+}
+function hideProgress() { document.getElementById('progressWrap').style.display = 'none'; }
+
+// ===================== 历史记录 =====================
+function saveHistory(result) {
+  try {
+    let hist = JSON.parse(localStorage.getItem('gen-history') || '[]');
+    // 只存元数据和 URL（数据量小，不会被浏览器限制）
+    hist.unshift({
+      type: result.type, prompt: (result.prompt || '').slice(0, 200),
+      model: result.model, time: Date.now(), url: result.urls?.[0] || ''
+    });
+    if (hist.length > 30) hist = hist.slice(0, 30);
+    localStorage.setItem('gen-history', JSON.stringify(hist));
+  } catch(e) {}
+}
+
+function renderHistory() {
+  try {
+    const hist = JSON.parse(localStorage.getItem('gen-history') || '[]');
+    const el = document.getElementById('historyList');
+    if (!hist.length) {
+      el.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">暂无记录</p>';
+      return;
+    }
+    el.innerHTML = hist.map(h => `
+      <div class="history-item" onclick="loadHistoryItem('${h.type}','${escAttr(h.url)}','${escAttr(h.prompt)}')">
+        ${h.type === 'image' && h.url && !h.url.startsWith('data:') ? `<img src="${h.url}" alt="" onerror="this.style.display='none'">` : '<span style="font-size:24px;">' + (h.type==='image'?'🖼️':'🎬') + '</span>'}
+        <div class="info">
+          <div class="prompt">${escHtml(h.prompt || '')}</div>
+          <div class="meta">${h.model} &middot; ${new Date(h.time).toLocaleString('zh-CN')}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+function loadHistoryItem(type, url, prompt) {
+  if (url) {
+    lastResult = { type, urls: [url], prompt: prompt || '', model: '' };
+    const div = document.getElementById('resultDisplay');
+    if (type === 'image') {
+      div.innerHTML = `<img src="${url}" alt="" style="max-width:100%;border-radius:12px;">`;
+    } else {
+      div.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;background:#000;"></video>`;
+    }
+    document.getElementById('resultActions').style.display = 'flex';
+    try { localStorage.setItem('gen-last-result', JSON.stringify(lastResult)); } catch(e) {}
+  }
+  if (prompt) {
+    document.getElementById('promptInput').value = prompt;
+  }
+}
+
+function clearHistory() {
+  localStorage.removeItem('gen-history');
+  renderHistory();
+  toast('🗑 历史已清空');
+}
+
+// ===================== 工具函数 =====================
+function extractImages(data) {
+  const images = [];
+  try {
+    for (const choice of (data.choices || [])) {
+      const msg = choice.message || {};
+      const content = msg.content;
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          if (part.type === 'image_url' && part.image_url) images.push(part.image_url.url);
+          if (part.type === 'image' && part.source) images.push('data:image/png;base64,' + part.source.data);
+        }
+      }
+      for (const img of (msg.images || [])) {
+        images.push(typeof img === 'string' ? img : img.url);
+      }
+    }
+  } catch(e) {}
+  return images.filter(Boolean);
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function escAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleApiKeyVis() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('generate-theme', next);
+}
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+</body>
+</html>
