@@ -528,7 +528,28 @@ body {
 .fab-icon { font-size: 22px; }
 @media (max-width: 640px) {
     .fab { bottom: 20px; right: 16px; padding: 14px 22px; font-size: 15px; }
+    .fab-home { bottom: 20px; left: 16px; }
 }
+
+.fab-home {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+.fab-home:hover { background: var(--accent); color: #FFF; border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
 
 .result-count {
     font-size: 13px;
@@ -5211,6 +5232,9 @@ loadMorePrompts();
 <!-- ========== FLOATING ACTION BUTTON ========== -->
 <a href="https://wj.qq.com/s2/26810693/cd9e/" target="_blank" rel="noopener" class="fab" title="提交你的提示词">
   <span class="fab-icon">✏️</span> 投稿提示词
+</a>
+<a href="index.html" class="fab-home" title="返回主页">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 </a>
 </body>
 </html>
