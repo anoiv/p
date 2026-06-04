@@ -79,6 +79,8 @@ function main() {
     const meta = metaById[cardId] || {};
     const promptType = (tags.includes('code') || tags.includes('interpreter')) ? 'code' : 'text';
 
+    // Convert English tag keys to Chinese display names
+    const chineseTags = tags.map(t => TAG_TO_CATEGORY[t] || t);
     const entry = {
       title: title,
       prompt: zh.prompt,
@@ -86,7 +88,7 @@ function main() {
       remark: zh.remark || '',
       category: category,
       type: promptType,
-      tags: ['AiShort', ...tags],
+      tags: ['AiShort', ...chineseTags],
       source: 'aishort.top',
     };
 
