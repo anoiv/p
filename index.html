@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -557,6 +557,19 @@ body {
     white-space: nowrap;
 }
 
+.sort-toggle {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.sort-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
 /* ====== Category Filters ====== */
 .categories-wrap {
     max-width: 1440px;
@@ -981,6 +994,7 @@ body {
     </div>
     <div class="header-actions">
       <span class="result-count" id="resultCount"></span>
+	      <button class="sort-toggle" id="sortToggle" title="切换排序">🔽 最新</button>
       <a href="https://wj.qq.com/s2/26810693/cd9e/" target="_blank" rel="noopener" class="btn-submit" title="提交你的提示词">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         提交提示词
@@ -4846,6 +4860,7 @@ const PROMPTS = YOUMIND_PROMPTS;
 let activeCategory = '全部';
 let searchQuery = '';
 let activeMode = 'all';
+let sortMode = 'newest'; // 'newest' | 'random'
 let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 // ===================== INIT =====================
@@ -4916,7 +4931,7 @@ function renderCategories() {
 
 // ===================== FILTER =====================
 function filteredPrompts() {
-  return PROMPTS.filter(p => {
+  let items = PROMPTS.filter(p => {
     const matchMode = activeMode === 'all'
       || (activeMode === 'video' && p.type === 'video')
       || (activeMode === 'image' && p.type === 'image')
@@ -4926,6 +4941,32 @@ function filteredPrompts() {
     const matchSearch = !q || p.title.toLowerCase().includes(q) || p.prompt.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)) || p.category.toLowerCase().includes(q);
     return matchMode && matchCat && matchSearch;
   });
+
+  if (sortMode === 'random') {
+    // Fisher-Yates shuffle with daily seed
+    let seed = todaySeed();
+    for (let i = items.length - 1; i > 0; i--) {
+      seed = (seed * 1103515245 + 12345) | 0;
+      const j = ((seed >>> 0) % (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+  } else {
+    // Newest first: reverse (newly added prompts are at the end)
+    items = [...items].reverse();
+  }
+
+  return items;
+}
+
+function todaySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function updateSortUI() {
+  const btn = document.getElementById('sortToggle');
+  if (!btn) return;
+  btn.textContent = sortMode === 'random' ? '🔀 随机' : '🔽 最新';
 }
 
 // ===================== RENDER GALLERY =====================
@@ -5114,6 +5155,13 @@ function bindEvents() {
 
   document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
+  document.getElementById('sortToggle').addEventListener('click', function() {
+    sortMode = sortMode === 'newest' ? 'random' : 'newest';
+    try { localStorage.setItem('prompthub-sort', sortMode); } catch(e) {}
+    updateSortUI();
+    renderGallery();
+  });
+
   document.getElementById('modalOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
@@ -5126,10 +5174,13 @@ function bindEvents() {
     }
   });
 
-  // Load saved theme
+  // Load saved theme & sort preference
   try {
     const saved = localStorage.getItem('prompthub-theme');
     if (saved) { isDark = saved === 'dark'; applyTheme(); }
+    const savedSort = localStorage.getItem('prompthub-sort');
+    if (savedSort === 'random') sortMode = 'random';
+    updateSortUI();
   } catch(e) {}
 }
 
