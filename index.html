@@ -542,31 +542,10 @@ body {
     margin: 0 auto;
     padding: 4px 24px;
 }
-.mode-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 10px 0 4px;
-}
-.mode-tab {
-    padding: 8px 20px;
-    border-radius: 24px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.mode-tab:hover { color: var(--text); background: var(--tag-bg); }
-.mode-tab.active {
-    background: var(--accent);
-    color: #FFF;
-}
-
 .categories {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     padding: 8px 0;
     max-height: 160px;
@@ -574,6 +553,24 @@ body {
 }
 .categories::-webkit-scrollbar { width: 4px; }
 .categories::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.cat-mode {
+    font-weight: 600 !important;
+}
+.cat-mode.active {
+    background: var(--accent) !important;
+    color: #FFF !important;
+    border-color: var(--accent) !important;
+}
+
+.cat-divider {
+    width: 2px;
+    height: 22px;
+    background: var(--border);
+    border-radius: 1px;
+    flex-shrink: 0;
+    margin: 0 2px;
+}
 .cat-chip {
     flex-shrink: 0;
     padding: 6px 16px;
@@ -979,11 +976,6 @@ body {
       <a href="generate.html" class="btn-submit" style="background:linear-gradient(135deg,#8B5CF6,#A855F7);" title="AI 图像视频生成">✨ AI 生成</a>
       <button class="btn-icon" id="themeToggle" title="切换主题">🌓</button>
     </div>
-  </div>
-  <div class="mode-tabs" id="modeTabs">
-    <button class="mode-tab active" data-mode="all">🎨 全部</button>
-    <button class="mode-tab" data-mode="visual">🖼️ 视觉创作</button>
-    <button class="mode-tab" data-mode="text">📝 文本提示词</button>
   </div>
   <div class="categories-wrap">
     <div class="categories" id="categoryFilters"></div>
@@ -4894,9 +4886,19 @@ function getCategories() {
 
 function renderCategories() {
   const container = document.getElementById('categoryFilters');
-  container.innerHTML = getCategories().map(c =>
+  const modes = [
+    { mode: 'all', label: '全部', icon: '🎨' },
+    { mode: 'visual', label: '视觉创作', icon: '🖼' },
+    { mode: 'text', label: '文本提示词', icon: '📝' },
+  ];
+  const modeHtml = modes.map(m =>
+    `<button class="cat-chip cat-mode${activeMode === m.mode ? ' active' : ''}" data-mode="${m.mode}">${m.icon} ${m.label}</button>`
+  ).join('');
+  const divider = '<span class="cat-divider"></span>';
+  const catList = getCategories().filter(c => c !== '全部').map(c =>
     `<button class="cat-chip${c === activeCategory ? ' active' : ''}" data-category="${c}">${c}</button>`
   ).join('');
+  container.innerHTML = modeHtml + divider + catList;
 }
 
 // ===================== FILTER =====================
@@ -5077,17 +5079,15 @@ function bindEvents() {
     renderGallery();
   });
 
-  document.getElementById('modeTabs').addEventListener('click', function(e) {
-    const tab = e.target.closest('.mode-tab');
-    if (!tab) return;
-    activeMode = tab.dataset.mode;
-    activeCategory = '全部';
-    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t === tab));
-    renderCategories();
-    renderGallery();
-  });
-
   document.getElementById('categoryFilters').addEventListener('click', function(e) {
+    const modeChip = e.target.closest('.cat-mode');
+    if (modeChip) {
+      activeMode = modeChip.dataset.mode;
+      activeCategory = '全部';
+      renderCategories();
+      renderGallery();
+      return;
+    }
     const chip = e.target.closest('.cat-chip');
     if (!chip) return;
     activeCategory = chip.dataset.category;
