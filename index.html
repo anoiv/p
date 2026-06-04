@@ -639,6 +639,14 @@ body {
     background: #EF4444 !important;
     color: #fff !important;
 }
+.card-tag-text {
+    background: #10B981 !important;
+    color: #fff !important;
+}
+.card-tag-code {
+    background: #6366F1 !important;
+    color: #fff !important;
+}
 
 .card-body { padding: 14px 16px; }
 .card-title {
@@ -776,6 +784,22 @@ body {
     word-break: break-word;
     margin-bottom: 16px;
 }
+.modal-desc {
+    background: var(--accent-light);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+.modal-source {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+.modal-faq { margin-top: 12px; }
 .modal-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .modal-tag {
     font-size: 12px;
@@ -4889,6 +4913,8 @@ function renderGallery() {
           <div class="card-footer">
             <div class="card-tags">
               ${isVideo ? '<span class="card-tag card-tag-video">🎬 视频</span>' : ''}
+              ${p.type === 'code' ? '<span class="card-tag card-tag-code">💻 代码</span>' : ''}
+              ${p.type === 'text' ? '<span class="card-tag card-tag-text">📝 文本</span>' : ''}
               <span class="card-tag">${escapeHtml(p.category || '')}</span>
               ${tags.slice(0, 1).map(t => `<span class="card-tag">${escapeHtml(t)}</span>`).join('')}
             </div>
@@ -4947,7 +4973,11 @@ function openModal(id) {
         ${(p.tags || []).map(t => `<span class="modal-tag">${escapeHtml(t)}</span>`).join('')}
         ${p.featured ? '<span class="modal-tag">⭐ 精选</span>' : ''}
       </div>
+      ${p.description ? `<div class="modal-desc"><strong>简介：</strong>${escapeHtml(p.description)}</div>` : ''}
+      ${p.remark ? `<div class="modal-desc" style="margin-top:6px"><strong>提示：</strong>${escapeHtml(p.remark)}</div>` : ''}
       <div class="modal-prompt">${escapeHtml(p.prompt)}</div>
+      ${p.source ? `<div class="modal-source">来源：${escapeHtml(p.source)}</div>` : ''}
+      ${p.faq ? `<div class="modal-faq"><h4 style="margin:12px 0 8px;font-size:14px;">💡 常见问题</h4>${p.faq.map(f => `<div style="margin-bottom:8px;padding:10px;background:var(--tag-bg);border-radius:8px;"><strong style="font-size:13px;">Q: ${escapeHtml(f.q)}</strong><br><span style="font-size:13px;color:var(--text-secondary);">A: ${escapeHtml(f.a)}</span></div>`).join('')}</div>` : ''}
       ${moreImgs}
 <div class="modal-action">
         <button class="btn btn-primary" onclick="copyPrompt(${pid})">
