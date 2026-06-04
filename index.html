@@ -542,6 +542,28 @@ body {
     margin: 0 auto;
     padding: 4px 24px;
 }
+.mode-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 10px 0 4px;
+}
+.mode-tab {
+    padding: 8px 20px;
+    border-radius: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mode-tab:hover { color: var(--text); background: var(--tag-bg); }
+.mode-tab.active {
+    background: var(--accent);
+    color: #FFF;
+}
+
 .categories {
     display: flex;
     flex-wrap: wrap;
@@ -957,6 +979,11 @@ body {
       <a href="generate.html" class="btn-submit" style="background:linear-gradient(135deg,#8B5CF6,#A855F7);" title="AI 图像视频生成">✨ AI 生成</a>
       <button class="btn-icon" id="themeToggle" title="切换主题">🌓</button>
     </div>
+  </div>
+  <div class="mode-tabs" id="modeTabs">
+    <button class="mode-tab active" data-mode="all">🎨 全部</button>
+    <button class="mode-tab" data-mode="visual">🖼️ 视觉创作</button>
+    <button class="mode-tab" data-mode="text">📝 文本提示词</button>
   </div>
   <div class="categories-wrap">
     <div class="categories" id="categoryFilters"></div>
@@ -4814,6 +4841,7 @@ const PROMPTS = YOUMIND_PROMPTS;
 // ===================== STATE =====================
 let activeCategory = '全部';
 let searchQuery = '';
+let activeMode = 'all';
 let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 // ===================== INIT =====================
@@ -4846,8 +4874,21 @@ function toggleTheme() {
 }
 
 // ===================== CATEGORIES =====================
+function isVisualPrompt(p) {
+  return p.type === 'video' || p.type === 'image';
+}
+function isTextPrompt(p) {
+  return p.type === 'text' || p.type === 'code';
+}
+function isVisualCategory(cat) {
+  const samples = PROMPTS.filter(p => p.category === cat).slice(0, 5);
+  return samples.filter(p => isVisualPrompt(p)).length >= samples.filter(p => isTextPrompt(p)).length;
+}
 function getCategories() {
-  const cats = ['全部', ...new Set(PROMPTS.map(p => p.category))];
+  let pool = PROMPTS;
+  if (activeMode === 'visual') pool = PROMPTS.filter(p => isVisualPrompt(p));
+  else if (activeMode === 'text') pool = PROMPTS.filter(p => isTextPrompt(p));
+  const cats = ['全部', ...new Set(pool.map(p => p.category))];
   return cats;
 }
 
@@ -4861,10 +4902,11 @@ function renderCategories() {
 // ===================== FILTER =====================
 function filteredPrompts() {
   return PROMPTS.filter(p => {
+    const matchMode = activeMode === 'all' || (activeMode === 'visual' && isVisualPrompt(p)) || (activeMode === 'text' && isTextPrompt(p));
     const matchCat = activeCategory === '全部' || p.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || p.title.toLowerCase().includes(q) || p.prompt.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)) || p.category.toLowerCase().includes(q);
-    return matchCat && matchSearch;
+    return matchMode && matchCat && matchSearch;
   });
 }
 
@@ -5032,6 +5074,16 @@ function showToast(msg) {
 function bindEvents() {
   document.getElementById('searchInput').addEventListener('input', function(e) {
     searchQuery = e.target.value;
+    renderGallery();
+  });
+
+  document.getElementById('modeTabs').addEventListener('click', function(e) {
+    const tab = e.target.closest('.mode-tab');
+    if (!tab) return;
+    activeMode = tab.dataset.mode;
+    activeCategory = '全部';
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t === tab));
+    renderCategories();
     renderGallery();
   });
 
