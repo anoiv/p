@@ -542,34 +542,45 @@ body {
     margin: 0 auto;
     padding: 4px 24px;
 }
+/* ====== 三列分类导航 ====== */
 .categories {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr;
+    gap: 12px;
+    padding: 8px 0;
+}
+@media (max-width: 768px) {
+    .categories { grid-template-columns: 1fr; gap: 8px; }
+}
+.cat-col {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+.cat-col-header {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+.cat-col-header:hover { opacity: 0.85; }
+.cat-col-header.active { box-shadow: 0 0 0 3px rgba(0,0,0,0.15); }
+.cat-col-header.video { background: linear-gradient(135deg, #EF4444, #DC2626); color: #FFF; }
+.cat-col-header.image { background: linear-gradient(135deg, #3B82F6, #2563EB); color: #FFF; }
+.cat-col-header.text  { background: linear-gradient(135deg, #10B981, #059669); color: #FFF; }
+.cat-col-tags {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0;
-    max-height: 160px;
-    overflow-y: auto;
+    gap: 6px;
 }
-.categories::-webkit-scrollbar { width: 4px; }
-.categories::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.cat-mode {
-    font-weight: 600 !important;
-}
-.cat-mode.active {
-    background: var(--accent) !important;
-    color: #FFF !important;
-    border-color: var(--accent) !important;
-}
-
-.cat-divider {
-    width: 2px;
-    height: 22px;
-    background: var(--border);
-    border-radius: 1px;
-    flex-shrink: 0;
-    margin: 0 2px;
+.cat-col-tags .cat-chip {
+    font-size: 12px;
+    padding: 4px 10px;
 }
 .cat-chip {
     flex-shrink: 0;
@@ -4866,45 +4877,44 @@ function toggleTheme() {
 }
 
 // ===================== CATEGORIES =====================
-function isVisualPrompt(p) {
-  return p.type === 'video' || p.type === 'image';
-}
-function isTextPrompt(p) {
-  return p.type === 'text' || p.type === 'code';
-}
-function isVisualCategory(cat) {
-  const samples = PROMPTS.filter(p => p.category === cat).slice(0, 5);
-  return samples.filter(p => isVisualPrompt(p)).length >= samples.filter(p => isTextPrompt(p)).length;
-}
-function getCategories() {
-  let pool = PROMPTS;
-  if (activeMode === 'visual') pool = PROMPTS.filter(p => isVisualPrompt(p));
-  else if (activeMode === 'text') pool = PROMPTS.filter(p => isTextPrompt(p));
-  const cats = ['全部', ...new Set(pool.map(p => p.category))];
-  return cats;
+const CAT_GROUPS = {
+  video: { label: '🎬 视频提示词', color: 'video', cats: ['电影短片','动漫二次元','赛博科幻','音乐MV','奇幻魔法'] },
+  image: { label: '🖼 图片提示词', color: 'image', cats: ['社交媒体帖子','产品营销','头像/个人资料','其他','海报/传单','游戏素材','信息图/教育视觉','漫画/故事板','电商主图','YouTube缩略图','应用/网页设计'] },
+  text:  { label: '📝 其他提示词', color: 'text', cats: ['写作辅助','IT/编程','AI工具','语言/翻译','效率工具','企业职能','文章/报告','学术/教师','生活质量','心理/社交','趣味科普','生活百科','辩论/演讲','哲学/宗教','医疗健康','金融顾问','趣味游戏','音乐艺术','专业顾问','文本/词语','点评/评鉴','SEO优化','终端/解释器','思维训练','教育/学生','用户分享'] },
+};
+
+function getCategoriesByGroup(group) {
+  return CAT_GROUPS[group].cats.filter(c => PROMPTS.some(p => p.category === c));
 }
 
 function renderCategories() {
   const container = document.getElementById('categoryFilters');
-  const modes = [
-    { mode: 'all', label: '全部', icon: '🎨' },
-    { mode: 'visual', label: '视觉创作', icon: '🖼' },
-    { mode: 'text', label: '文本提示词', icon: '📝' },
-  ];
-  const modeHtml = modes.map(m =>
-    `<button class="cat-chip cat-mode${activeMode === m.mode ? ' active' : ''}" data-mode="${m.mode}">${m.icon} ${m.label}</button>`
-  ).join('');
-  const divider = '<span class="cat-divider"></span>';
-  const catList = getCategories().filter(c => c !== '全部').map(c =>
-    `<button class="cat-chip${c === activeCategory ? ' active' : ''}" data-category="${c}">${c}</button>`
-  ).join('');
-  container.innerHTML = modeHtml + divider + catList;
+  let html = '';
+
+  for (const [groupKey, group] of Object.entries(CAT_GROUPS)) {
+    const visibleCats = getCategoriesByGroup(groupKey);
+    if (visibleCats.length === 0) continue;
+
+    const isGroupActive = activeMode === groupKey;
+    html += `<div class="cat-col">`;
+    html += `<button class="cat-col-header ${group.color}${isGroupActive ? ' active' : ''}" data-mode="${groupKey}">${group.label}</button>`;
+    html += `<div class="cat-col-tags">`;
+    html += visibleCats.map(c =>
+      `<button class="cat-chip${c === activeCategory && isGroupActive ? ' active' : ''}" data-category="${c}" data-group="${groupKey}">${c}</button>`
+    ).join('');
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 // ===================== FILTER =====================
 function filteredPrompts() {
   return PROMPTS.filter(p => {
-    const matchMode = activeMode === 'all' || (activeMode === 'visual' && isVisualPrompt(p)) || (activeMode === 'text' && isTextPrompt(p));
+    const matchMode = activeMode === 'all'
+      || (activeMode === 'video' && p.type === 'video')
+      || (activeMode === 'image' && p.type === 'image')
+      || (activeMode === 'text' && (p.type === 'text' || p.type === 'code'));
     const matchCat = activeCategory === '全部' || p.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || p.title.toLowerCase().includes(q) || p.prompt.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)) || p.category.toLowerCase().includes(q);
@@ -5080,16 +5090,23 @@ function bindEvents() {
   });
 
   document.getElementById('categoryFilters').addEventListener('click', function(e) {
-    const modeChip = e.target.closest('.cat-mode');
-    if (modeChip) {
-      activeMode = modeChip.dataset.mode;
+    // Handle major category header click (toggle on/off)
+    const header = e.target.closest('.cat-col-header');
+    if (header) {
+      if (activeMode === header.dataset.mode) {
+        activeMode = 'all';
+      } else {
+        activeMode = header.dataset.mode;
+      }
       activeCategory = '全部';
       renderCategories();
       renderGallery();
       return;
     }
+    // Handle sub-category chip click
     const chip = e.target.closest('.cat-chip');
     if (!chip) return;
+    activeMode = chip.dataset.group;
     activeCategory = chip.dataset.category;
     renderCategories();
     renderGallery();
