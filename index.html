@@ -9,72 +9,141 @@
   --bg: #F8F9FB; --card: #FFFFFF; --border: #E5E7EB;
   --text: #1A1A2E; --text2: #6B7280; --text3: #9CA3AF;
   --accent: #6366F1; --accent2: #8B5CF6;
-  --radius: 16px; --font: 'Segoe UI', system-ui, sans-serif;
+  --radius: 20px; --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 [data-theme="dark"] {
-  --bg: #0F172A; --card: #1E293B; --border: #334155;
-  --text: #F1F5F9; --text2: #94A3B8; --text3: #64748B;
+  --bg: #0a0a14; --card: #12121f; --border: #1e1e38;
+  --text: #e8e8f4; --text2: #9090b8; --text3: #585878;
   --accent: #818CF8; --accent2: #A78BFA;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
-a { text-decoration: none; color: inherit; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
 
-header {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; gap: 16px; padding: 14px 24px;
-  background: var(--bg); border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
+/* ── Header ── */
+header{
+  position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;
+  padding:12px 24px;background:var(--bg);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
 }
-header .logo { font-size: 18px; font-weight: 700; }
-header .logo span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-header nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
-header nav a {
-  color: var(--text2); font-size: 13px; padding: 6px 12px;
-  border-radius: 8px; transition: all 0.2s;
-}
-header nav a:hover, header nav a.active { color: var(--text); background: var(--border); }
-.theme-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 16px; margin-left: 8px; }
+header .logo{font-size:18px;font-weight:700;white-space:nowrap}
+header .logo span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header nav{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+header nav a{color:var(--text2);font-size:13px;padding:6px 12px;border-radius:8px;transition:all .2s}
+header nav a:hover,header nav a.active{color:var(--text);background:var(--border)}
+.theme-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;margin-left:4px}
 
-.hero {
-  text-align: center; padding: 80px 20px 48px; max-width: 700px; margin: 0 auto;
+/* ── Hero ── */
+.hero{
+  position:relative;text-align:center;padding:100px 20px 80px;max-width:800px;margin:0 auto;
+  overflow:hidden;
 }
-.hero h1 {
-  font-size: 36px; font-weight: 800; margin-bottom: 12px;
-  background: linear-gradient(135deg, #F97316, #EC4899, #8B5CF6);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+.hero::before{
+  content:'';position:absolute;top:-50%;left:-20%;width:140%;height:200%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(99,102,241,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(236,72,153,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139,92,246,.06) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
 }
-.hero p { color: var(--text2); font-size: 16px; line-height: 1.7; }
+.hero>*{position:relative;z-index:1}
+.hero .tag{
+  display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.12));
+  color:var(--accent2);margin-bottom:20px;letter-spacing:.5px;
+}
+.hero h1{
+  font-size:48px;font-weight:800;margin-bottom:16px;line-height:1.15;
+  background:linear-gradient(135deg,#F97316 0%,#EC4899 40%,#8B5CF6 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero h1 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#EC4899;margin-left:4px;vertical-align:super;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero p{color:var(--text2);font-size:17px;line-height:1.8;max-width:520px;margin:0 auto}
 
-.cards {
-  max-width: 900px; margin: 0 auto 60px; padding: 0 20px;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+/* ── Stats ── */
+.stats{
+  display:flex;justify-content:center;gap:40px;padding:0 20px 60px;flex-wrap:wrap;
 }
-.card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 24px;
-  transition: all 0.2s; cursor: pointer; display: block;
+.stat{text-align:center}
+.stat .num{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat .lbl{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* ── Featured ── */
+.featured{
+  max-width:900px;margin:0 auto 40px;padding:0 20px;
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); border-color: var(--accent2); }
-.card-icon { font-size: 36px; margin-bottom: 12px; }
-.card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-.card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
-.card .badge {
-  display: inline-block; margin-top: 10px; padding: 3px 10px;
-  font-size: 11px; font-weight: 600; border-radius: 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
+.featured-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:0;overflow:hidden;display:flex;align-items:stretch;
+  transition:all .3s;cursor:pointer;
+}
+.featured-card:hover{transform:translateY(-2px);box-shadow:0 20px 60px rgba(99,102,241,.12);border-color:var(--accent2)}
+.featured-left{
+  width:6px;flex-shrink:0;
+  background:linear-gradient(180deg,#F97316,#EC4899,#8B5CF6);
+}
+.featured-body{padding:28px 32px;flex:1;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.featured-emoji{font-size:52px;flex-shrink:0}
+.featured-text h3{font-size:22px;font-weight:700;margin-bottom:6px}
+.featured-text p{font-size:14px;color:var(--text2);line-height:1.6}
+.featured-text .tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.featured-text .tags span{
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;
+  background:var(--border);color:var(--text2);
 }
 
-footer {
-  text-align: center; padding: 40px 20px; color: var(--text3); font-size: 12px;
-  border-top: 1px solid var(--border); max-width: 900px; margin: 0 auto;
+/* ── Card Grid ── */
+.section-title{
+  max-width:900px;margin:0 auto 16px;padding:0 20px;
+  font-size:14px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;
+}
+.cards{
+  max-width:900px;margin:0 auto 60px;padding:0 20px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;
+}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 22px;transition:all .25s;cursor:pointer;position:relative;overflow:hidden;
+}
+.card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:3px 3px 0 0;opacity:0;transition:opacity .25s;
+}
+.card:hover::after{opacity:1}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.06);border-color:transparent}
+.card.c1::after{background:linear-gradient(90deg,#F97316,#EC4899)}
+.card.c2::after{background:linear-gradient(90deg,#6366F1,#8B5CF6)}
+.card.c3::after{background:linear-gradient(90deg,#10B981,#059669)}
+.card.c4::after{background:linear-gradient(90deg,#F59E0B,#D97706)}
+.card.c5::after{background:linear-gradient(90deg,#06B6D4,#0EA5E9)}
+.card-icon{font-size:34px;margin-bottom:14px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.card p{font-size:13px;color:var(--text2);line-height:1.6}
+.card .arrow{
+  display:inline-flex;align-items:center;gap:4px;margin-top:12px;
+  font-size:12px;font-weight:600;color:var(--accent);opacity:0;
+  transform:translateX(-8px);transition:all .25s;
+}
+.card:hover .arrow{opacity:1;transform:translateX(0)}
+
+/* ── Footer ── */
+footer{
+  text-align:center;padding:40px 20px;color:var(--text3);font-size:12px;
+  max-width:900px;margin:0 auto;
 }
 
-@media (max-width: 600px) {
-  .hero { padding: 48px 16px 32px; }
-  .hero h1 { font-size: 26px; }
-  .cards { grid-template-columns: 1fr; }
+@media(max-width:700px){
+  .hero{padding:60px 16px 48px}
+  .hero h1{font-size:30px}
+  .hero p{font-size:15px}
+  .stats{gap:24px}
+  .stat .num{font-size:24px}
+  .featured-body{padding:20px 24px}
+  .featured-emoji{font-size:38px}
+  .featured-text h3{font-size:18px}
+  .cards{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -94,51 +163,74 @@ footer {
 </header>
 
 <div class="hero">
-  <h1>何老师的提示词</h1>
-  <p>AI 短剧创作全流程方法论 &mdash; 从运镜、角色设计到分镜剧本，<br>一套完整的 AI 视频创作工作流。</p>
+  <div class="tag">🎓 AI 短剧创作训练营</div>
+  <h1>何老师的提示词<span class="dot"></span></h1>
+  <p>从运镜到角色，从剧本到成片<br>一套完整的 AI 视频创作方法论</p>
 </div>
 
-<div class="cards">
-  <a href="ai-drama.html" class="card">
-    <div class="card-icon">🎬</div>
-    <h3>AI 短剧技巧</h3>
-    <p>运镜技巧 · 角色设计 · 分镜剧本 · 场景道具 · 故事版 · 封面设计 · 短视频文案</p>
-    <span class="badge">53 条提示词模板</span>
-  </a>
+<div class="stats">
+  <div class="stat"><div class="num">8</div><div class="lbl">创作板块</div></div>
+  <div class="stat"><div class="num">53</div><div class="lbl">提示词模板</div></div>
+  <div class="stat"><div class="num">3</div><div class="lbl">AI 模型接入</div></div>
+  <div class="stat"><div class="num">∞</div><div class="lbl">创作可能</div></div>
+</div>
 
-  <a href="generate.html" class="card">
+<a href="ai-drama.html">
+<div class="featured">
+  <div class="featured-card">
+    <div class="featured-left"></div>
+    <div class="featured-body">
+      <div class="featured-emoji">🎬</div>
+      <div class="featured-text">
+        <h3>AI 短剧创作核心技巧</h3>
+        <p>运镜技巧、角色设计、分镜剧本、场景道具、故事版、封面设计、短视频文案 — 8 大板块 53 条实战提示词模板。</p>
+        <div class="tags">
+          <span>🎥 运镜</span><span>👤 角色</span><span>🎬 分镜</span><span>🏛️ 场景</span><span>📱 文案</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</a>
+
+<div class="section-title" style="margin-top:48px;">🛠 工具箱</div>
+<div class="cards">
+  <a href="generate.html" class="card c1">
     <div class="card-icon">🖼️</div>
     <h3>AI 图像生成</h3>
-    <p>接入 GPT Image、Gemini 等模型，多比例多分辨率在线生成</p>
-    <span class="badge">在线工具</span>
+    <p>接入 GPT Image、Gemini 等顶级模型，多比例多分辨率在线出图</p>
+    <div class="arrow">立即使用 →</div>
   </a>
 
-  <a href="resources.html" class="card">
+  <a href="resources.html" class="card c2">
     <div class="card-icon">📦</div>
     <h3>共享资源</h3>
-    <p>AI 短剧相关的工具链、素材库、学习资料汇总</p>
-    <span class="badge">资源合集</span>
+    <p>AI 短剧工具链、素材库、学习资料一站汇总</p>
+    <div class="arrow">查看资源 →</div>
   </a>
 
-  <a href="new-media.html" class="card">
-    <div class="card-icon">💼</div>
-    <h3>新媒体面试技巧</h3>
-    <p>新媒体运营岗位面试指南与行业洞察</p>
-    <span class="badge">职场</span>
-  </a>
-
-  <a href="aigc.html" class="card">
+  <a href="aigc.html" class="card c3">
     <div class="card-icon">📚</div>
     <h3>学习 AIGC</h3>
-    <p>AIGC 入门到进阶学习路线与资源推荐</p>
-    <span class="badge">教程</span>
+    <p>从入门到进阶，系统化学习 AI 内容生成技术</p>
+    <div class="arrow">开始学习 →</div>
+  </a>
+</div>
+
+<div class="section-title">💼 职场加油站</div>
+<div class="cards">
+  <a href="new-media.html" class="card c4">
+    <div class="card-icon">💼</div>
+    <h3>新媒体面试技巧</h3>
+    <p>新媒体运营岗位面试指南，行业洞察与实战建议</p>
+    <div class="arrow">了解更多 →</div>
   </a>
 
-  <a href="interview-tips.html" class="card">
+  <a href="interview-tips.html" class="card c5">
     <div class="card-icon">🎤</div>
-    <h3>面试技巧</h3>
-    <p>通用面试方法论与实战经验总结</p>
-    <span class="badge">方法论</span>
+    <h3>通用面试技巧</h3>
+    <p>面试方法论与表达框架，适用各类岗位场景</p>
+    <div class="arrow">了解更多 →</div>
   </a>
 </div>
 
@@ -147,15 +239,15 @@ footer {
 </footer>
 
 <script>
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('prompthub-theme', next);
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('prompthub-theme',next);
 }
-(function() {
-  const saved = localStorage.getItem('prompthub-theme');
-  if (saved) document.documentElement.setAttribute('data-theme', saved);
+(function(){
+  const s=localStorage.getItem('prompthub-theme');
+  if(s)document.documentElement.setAttribute('data-theme',s);
 })();
 </script>
 </body>
