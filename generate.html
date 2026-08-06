@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 图像/视频生成 - 何老师的提示词</title>
+<title>AI 图像生成 - 何老师的提示词</title>
 <style>
 :root {
   --bg: #0a0a10; --card: #12121c; --border: #262638;
@@ -52,15 +52,6 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 .field textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
 .field small { font-size: 11px; color: var(--text3); margin-top: 2px; display: block; }
 
-/* Type toggle */
-.type-toggle { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; margin-bottom: 14px; }
-.type-toggle button {
-  flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer;
-  font-size: 13px; font-weight: 500; font-family: var(--font);
-  background: transparent; color: var(--text2); transition: all 0.2s;
-}
-.type-toggle button.active { background: var(--accent); color: #fff; }
-
 /* Upload area */
 .upload-area {
   border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px;
@@ -102,7 +93,7 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 /* Result panel */
 #resultArea { display: flex; flex-direction: column; gap: 16px; }
 #resultDisplay { min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text3); }
-#resultDisplay img, #resultDisplay video { max-width: 100%; border-radius: var(--radius); }
+#resultDisplay img { max-width: 100%; border-radius: var(--radius); }
 .result-actions { display: flex; gap: 8px; }
 .result-actions button { flex: 1; }
 
@@ -159,42 +150,27 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
   <!-- 左侧：输入面板 -->
   <div>
     <div class="panel">
-      <h2>✨ AI 图像/视频生成</h2>
-
-      <div class="type-toggle" id="typeToggle">
-        <button class="active" data-type="image">🖼️ 图像生成</button>
-        <button data-type="video">🎬 视频生成</button>
-      </div>
+      <h2>✨ AI 图像生成</h2>
 
       <div class="field">
         <label>模型</label>
         <select id="modelSelect"></select>
       </div>
 
-      <div class="field" id="sizeField">
-        <label>尺寸</label>
-        <select id="sizeSelect"></select>
-      </div>
-      <div class="field" id="aspectField" style="display:none;">
-        <label>宽高比</label>
-        <select id="aspectSelect"></select>
-      </div>
-      <div class="field" id="imgSizeField" style="display:none;">
-        <label>分辨率</label>
-        <select id="imgSizeSelect"></select>
-      </div>
-      <div class="field" id="ratioField" style="display:none;">
-        <label>画面比例</label>
-        <select id="ratioSelect"></select>
-      </div>
-      <div class="field" id="durationField" style="display:none;">
-        <label>时长（秒）</label>
-        <select id="durationSelect"></select>
+      <div class="param-row">
+        <div class="field" id="aspectField">
+          <label>画面比例</label>
+          <select id="aspectSelect"></select>
+        </div>
+        <div class="field" id="imgSizeField">
+          <label>分辨率</label>
+          <select id="imgSizeSelect"></select>
+        </div>
       </div>
 
       <div class="field">
         <label>提示词</label>
-        <textarea id="promptInput" placeholder="描述你想要生成的图像或视频内容...&#10;&#10;例如：一只金色的小狗在阳光下的麦田里奔跑，电影质感，4K"></textarea>
+        <textarea id="promptInput" placeholder="描述你想要生成的图像内容...&#10;&#10;例如：一只金色的小狗在阳光下的麦田里奔跑，电影质感，4K"></textarea>
       </div>
 
       <div class="field">
@@ -251,24 +227,29 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 <script>
 // ===================== 全局状态 =====================
 const API_BASE = 'https://prompt-gallery-proxy.anongg.workers.dev/v1';
-let genType = 'image';
 let currentModel = null;
 let uploadedImages = [];
 let lastResult = null;
-let pollingTimer = null;
+
+// ===================== DALL-E 尺寸映射 =====================
+// aspect_ratio + resolution -> DALL-E size
+const DALLE_SIZE_MAP = {
+  '1:1':  { '1080P': '1024x1024', '2K': '2048x2048', '4K': '2048x2048' },
+  '16:9': { '1080P': '1280x720',  '2K': '2048x1152', '4K': '2048x1152' },
+  '9:16': { '1080P': '720x1280',  '2K': '1152x2048', '4K': '1152x2048' },
+  '4:3':  { '1080P': '1792x1024', '2K': '1792x1024', '4K': '2048x2048' },
+  '3:4':  { '1080P': '1024x1792', '2K': '1024x1792', '4K': '2048x2048' },
+};
 
 // ===================== 模型定义 =====================
-const MODELS = {
-  image: [
-    { id: 'gpt-image-2-vip', name: 'GPT Image 2 VIP', sizes: ['1024x1024','1024x1792','1792x1024','1280x720','720x1280','2048x2048','2048x1152','1152x2048'], defaultSize: '1024x1024', api: 'dalle' },
-    { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro 图像', aspects: ['1:1','16:9','9:16','4:3','3:4'], imgSizes: ['1K','2K','4K'], defaultAspect: '16:9', defaultImgSize: '2K', api: 'chat' },
-    { id: 'nano-banana-2-2k', name: 'Nano Banana 2K', aspects: ['1:1','16:9','9:16','4:3','3:4'], imgSizes: ['2K'], defaultAspect: '1:1', defaultImgSize: '2K', api: 'chat' },
-  ],
-  video: [
-    { id: 'doubao-seedance-2-0-260128', name: 'Seedance 2.0（高质量）', ratios: ['16:9','9:16','1:1','4:3','3:4','21:9'], durations: [4,5,6,8,10,15], defaultRatio: '16:9', defaultDuration: 5 },
-    { id: 'doubao-seedance-2-0-fast-260128', name: 'Seedance 2.0 Fast（快速）', ratios: ['16:9','9:16','1:1','4:3','3:4'], durations: [4,5,6,8,10,15], defaultRatio: '16:9', defaultDuration: 5 },
-  ]
-};
+const ASPECTS = ['1:1','16:9','9:16','4:3','3:4'];
+const RESOLUTIONS = ['1080P','2K','4K'];
+
+const MODELS = [
+  { id: 'gpt-image-2-vip', name: 'GPT Image 2 VIP', api: 'dalle', defaultAspect: '1:1', defaultRes: '1080P' },
+  { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro 图像', api: 'chat', defaultAspect: '16:9', defaultRes: '2K', maxRes: '4K' },
+  { id: 'nano-banana-2-2k', name: 'Nano Banana 2K', api: 'chat', defaultAspect: '1:1', defaultRes: '2K', maxRes: '2K' },
+];
 
 // ===================== 初始化 =====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -281,46 +262,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // API Key
   const savedKey = localStorage.getItem('gen-api-token');
   if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
-  // 类型切换
-  document.querySelectorAll('#typeToggle button').forEach(btn => {
-    btn.addEventListener('click', () => switchType(btn.dataset.type));
-  });
-  switchType('image');
+  // 初始化模型列表
+  const sel = document.getElementById('modelSelect');
+  sel.innerHTML = MODELS.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  onModelChange();
   // 历史
   renderHistory();
 });
 
-function switchType(type) {
-  genType = type;
-  document.querySelectorAll('#typeToggle button').forEach(b => {
-    b.classList.toggle('active', b.dataset.type === type);
-  });
-  // 更新模型列表
-  const sel = document.getElementById('modelSelect');
-  const models = MODELS[type];
-  sel.innerHTML = models.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-  onModelChange();
-}
-
 function onModelChange() {
   const id = document.getElementById('modelSelect').value;
-  currentModel = (MODELS[genType] || []).find(m => m.id === id);
+  currentModel = MODELS.find(m => m.id === id);
   if (!currentModel) return;
 
-  const isImage = genType === 'image';
-  const isVideo = genType === 'video';
+  // 根据模型的 maxRes 限制可用的分辨率选项
+  const maxRes = currentModel.maxRes || '4K';
+  const maxIdx = RESOLUTIONS.indexOf(maxRes);
+  const availRes = maxIdx >= 0 ? RESOLUTIONS.slice(0, maxIdx + 1) : RESOLUTIONS;
 
-  document.getElementById('sizeField').style.display = (isImage && currentModel.sizes) ? '' : 'none';
-  document.getElementById('aspectField').style.display = (isImage && currentModel.aspects) ? '' : 'none';
-  document.getElementById('imgSizeField').style.display = (isImage && currentModel.imgSizes) ? '' : 'none';
-  document.getElementById('ratioField').style.display = (isVideo && currentModel.ratios) ? '' : 'none';
-  document.getElementById('durationField').style.display = (isVideo && currentModel.durations) ? '' : 'none';
-
-  if (currentModel.sizes) popSel('sizeSelect', currentModel.sizes, currentModel.defaultSize);
-  if (currentModel.aspects) popSel('aspectSelect', currentModel.aspects, currentModel.defaultAspect);
-  if (currentModel.imgSizes) popSel('imgSizeSelect', currentModel.imgSizes, currentModel.defaultImgSize);
-  if (currentModel.ratios) popSel('ratioSelect', currentModel.ratios, currentModel.defaultRatio);
-  if (currentModel.durations) popSel('durationSelect', currentModel.durations, String(currentModel.defaultDuration));
+  popSel('aspectSelect', ASPECTS, currentModel.defaultAspect || '1:1');
+  popSel('imgSizeSelect', availRes, currentModel.defaultRes || '1080P');
 }
 
 function popSel(id, opts, def) {
@@ -379,11 +340,7 @@ async function startGeneration() {
   hideProgress();
 
   try {
-    if (genType === 'image') {
-      await generateImage(prompt, apiKey);
-    } else {
-      await generateVideo(prompt, apiKey);
-    }
+    await generateImage(prompt, apiKey);
   } catch (e) {
     document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ ${escHtml(e.message)}</div>`;
     toast('生成失败: ' + e.message);
@@ -399,100 +356,48 @@ async function generateImage(prompt, apiKey) {
   const timer = setTimeout(() => ctrl.abort(), 300000);
   showProgress(30, '正在生成图像...');
 
+  const aspect = document.getElementById('aspectSelect').value;
+  const res = document.getElementById('imgSizeSelect').value;
+
   let resp, data;
   if (currentModel.api === 'dalle') {
-    const payload = { model: currentModel.id, prompt: prompt, n: 1 };
-    if (currentModel.sizes) payload.size = document.getElementById('sizeSelect').value;
+    // DALL-E: 用 aspect+resolution 映射到 DALL-E 尺寸
+    const sizeMap = DALLE_SIZE_MAP[aspect] || {};
+    const size = sizeMap[res] || '1024x1024';
+    const payload = { model: currentModel.id, prompt: prompt, n: 1, size: size };
     resp = await fetch(API_BASE + '/images/generations', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
     data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
     const images = (data.data || []).map(d => d.url || d.b64_json).filter(Boolean);
     if (!images.length) throw new Error('API 未返回图像');
-    showResult({ type:'image', urls: images, model: currentModel.id, prompt });
+    showResult({ urls: images, model: currentModel.id, prompt });
   } else {
+    // Chat API (Gemini / Nano Banana): 用 image_config
     const msgContent = uploadedImages.length
       ? [...uploadedImages.map(u => ({ type: 'image_url', image_url: { url: u } })), { type: 'text', text: prompt }]
       : prompt;
     const payload = {
       model: currentModel.id, max_tokens: 4096,
       messages: [{ role: 'user', content: msgContent }],
-      image_config: { aspect_ratio: document.getElementById('aspectSelect').value, image_size: document.getElementById('imgSizeSelect').value },
+      image_config: { aspect_ratio: aspect, image_size: res },
     };
     resp = await fetch(API_BASE + '/chat/completions', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
     data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
     const images = extractImages(data);
     if (!images.length) throw new Error('API 未返回图像');
-    showResult({ type:'image', urls: images, model: currentModel.id, prompt });
+    showResult({ urls: images, model: currentModel.id, prompt });
   }
   clearTimeout(timer);
   hideProgress();
-}
-
-async function generateVideo(prompt, apiKey) {
-  showProgress(10, '提交任务...');
-  const headers = { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' };
-  const payload = {
-    model: currentModel.id, prompt: prompt,
-    ratio: document.getElementById('ratioSelect').value,
-    duration: parseInt(document.getElementById('durationSelect').value),
-    watermark: false,
-  };
-
-  const resp = await fetch(API_BASE + '/video/generations', { method:'POST', headers, body: JSON.stringify(payload) });
-  const data = await resp.json();
-  if (!resp.ok) throw new Error(data.error?.message || '提交失败');
-  const taskId = data.task_id || data.id;
-  if (!taskId) throw new Error('未获取到任务 ID');
-  startPolling(taskId, apiKey);
-}
-
-function startPolling(taskId, apiKey) {
-  if (pollingTimer) clearInterval(pollingTimer);
-  let count = 0;
-  pollingTimer = setInterval(async () => {
-    count++;
-    try {
-      const resp = await fetch(`${API_BASE}/video/generations/${taskId}`, {
-        headers: { 'Authorization': 'Bearer ' + apiKey }
-      });
-      const data = await resp.json();
-      const status = data.status;
-      const progMap = { 'queued': 15, 'processing': 60, 'completed': 100, 'succeeded': 100 };
-      const txtMap = { 'queued': '排队中...', 'processing': '生成中...', 'completed': '完成!', 'succeeded': '完成!', 'failed': '失败' };
-      showProgress(progMap[status] || (20 + count * 3), txtMap[status] || status);
-
-      if (status === 'completed' || status === 'succeeded') {
-        clearInterval(pollingTimer); pollingTimer = null;
-        const url = data.video_url || data.url;
-        if (url) {
-          showResult({ type:'video', urls:[url], model: currentModel.id, prompt: document.getElementById('promptInput').value.trim() });
-          hideProgress();
-          toast('✅ 视频生成完成');
-        }
-      } else if (status === 'failed' || status === 'error') {
-        clearInterval(pollingTimer); pollingTimer = null; hideProgress();
-        throw new Error(data.error || '视频生成失败');
-      }
-      if (count > 200) { clearInterval(pollingTimer); pollingTimer = null; hideProgress(); throw new Error('轮询超时'); }
-    } catch (e) {
-      clearInterval(pollingTimer); pollingTimer = null; hideProgress();
-      document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ ${escHtml(e.message)}</div>`;
-    }
-  }, 5000);
 }
 
 // ===================== 结果展示 =====================
 function showResult(result) {
   lastResult = result;
   const div = document.getElementById('resultDisplay');
-  if (result.type === 'image') {
-    div.innerHTML = result.urls.map(u => `<img src="${u}" alt="生成结果" style="max-width:100%;border-radius:12px;margin-bottom:8px;">`).join('');
-  } else {
-    div.innerHTML = result.urls.map(u => `<video src="${u}" controls style="width:100%;border-radius:12px;background:#000;"></video>`).join('');
-  }
+  div.innerHTML = result.urls.map(u => `<img src="${u}" alt="生成结果" style="max-width:100%;border-radius:12px;margin-bottom:8px;">`).join('');
   document.getElementById('resultActions').style.display = 'flex';
-  // 持久化当前结果，刷新不丢失
   try { localStorage.setItem('gen-last-result', JSON.stringify(result)); } catch(e) {}
   saveHistory(result);
   renderHistory();
@@ -505,11 +410,7 @@ function showResult(result) {
     if (saved) {
       lastResult = JSON.parse(saved);
       const div = document.getElementById('resultDisplay');
-      if (lastResult.type === 'image') {
-        div.innerHTML = lastResult.urls.map(u => `<img src="${u}" alt="" style="max-width:100%;border-radius:12px;">`).join('');
-      } else if (lastResult.type === 'video') {
-        div.innerHTML = lastResult.urls.map(u => `<video src="${u}" controls style="width:100%;border-radius:12px;background:#000;"></video>`).join('');
-      }
+      div.innerHTML = lastResult.urls.map(u => `<img src="${u}" alt="" style="max-width:100%;border-radius:12px;">`).join('');
       document.getElementById('resultActions').style.display = 'flex';
     }
   } catch(e) {}
@@ -518,10 +419,9 @@ function showResult(result) {
 
 function downloadResult() {
   if (!lastResult) return;
-  const ext = lastResult.type === 'image' ? 'png' : 'mp4';
   lastResult.urls.forEach((url, i) => {
     if (url.startsWith('data:')) {
-      const a = document.createElement('a'); a.href = url; a.download = `generated-${Date.now()}.${ext}`; a.click();
+      const a = document.createElement('a'); a.href = url; a.download = `generated-${Date.now()}.png`; a.click();
     } else {
       window.open(url, '_blank');
     }
@@ -530,7 +430,7 @@ function downloadResult() {
 
 async function copyResult() {
   if (!lastResult) return;
-  if (lastResult.type === 'image' && lastResult.urls[0].startsWith('data:')) {
+  if (lastResult.urls[0].startsWith('data:')) {
     try {
       const resp = await fetch(lastResult.urls[0]);
       const blob = await resp.blob();
@@ -557,9 +457,8 @@ function hideProgress() { document.getElementById('progressWrap').style.display 
 function saveHistory(result) {
   try {
     let hist = JSON.parse(localStorage.getItem('gen-history') || '[]');
-    // 只存元数据和 URL（数据量小，不会被浏览器限制）
     hist.unshift({
-      type: result.type, prompt: (result.prompt || '').slice(0, 200),
+      prompt: (result.prompt || '').slice(0, 200),
       model: result.model, time: Date.now(), url: result.urls?.[0] || ''
     });
     if (hist.length > 30) hist = hist.slice(0, 30);
@@ -576,8 +475,8 @@ function renderHistory() {
       return;
     }
     el.innerHTML = hist.map(h => `
-      <div class="history-item" onclick="loadHistoryItem('${h.type}','${escAttr(h.url)}','${escAttr(h.prompt)}')">
-        ${h.type === 'image' && h.url && !h.url.startsWith('data:') ? `<img src="${h.url}" alt="" onerror="this.style.display='none'">` : '<span style="font-size:24px;">' + (h.type==='image'?'🖼️':'🎬') + '</span>'}
+      <div class="history-item" onclick="loadHistoryItem('${escAttr(h.url)}','${escAttr(h.prompt)}')">
+        ${h.url && !h.url.startsWith('data:') ? `<img src="${h.url}" alt="" onerror="this.style.display='none'">` : '<span style="font-size:24px;">🖼️</span>'}
         <div class="info">
           <div class="prompt">${escHtml(h.prompt || '')}</div>
           <div class="meta">${h.model} &middot; ${new Date(h.time).toLocaleString('zh-CN')}</div>
@@ -587,15 +486,11 @@ function renderHistory() {
   } catch(e) {}
 }
 
-function loadHistoryItem(type, url, prompt) {
+function loadHistoryItem(url, prompt) {
   if (url) {
-    lastResult = { type, urls: [url], prompt: prompt || '', model: '' };
+    lastResult = { urls: [url], prompt: prompt || '', model: '' };
     const div = document.getElementById('resultDisplay');
-    if (type === 'image') {
-      div.innerHTML = `<img src="${url}" alt="" style="max-width:100%;border-radius:12px;">`;
-    } else {
-      div.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;background:#000;"></video>`;
-    }
+    div.innerHTML = `<img src="${url}" alt="" style="max-width:100%;border-radius:12px;">`;
     document.getElementById('resultActions').style.display = 'flex';
     try { localStorage.setItem('gen-last-result', JSON.stringify(lastResult)); } catch(e) {}
   }
