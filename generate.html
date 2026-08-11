@@ -517,6 +517,15 @@ function extractImages(data) {
           if (part.type === 'image_url' && part.image_url) images.push(part.image_url.url);
           if (part.type === 'image' && part.source) images.push('data:image/png;base64,' + part.source.data);
         }
+      } else if (typeof content === 'string') {
+        // 解析 markdown 格式: ![image](url)
+        const mdMatches = content.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/g);
+        if (mdMatches) {
+          for (const m of mdMatches) {
+            const urlMatch = m.match(/\((https?:\/\/[^\s)]+)\)/);
+            if (urlMatch) images.push(urlMatch[1]);
+          }
+        }
       }
       for (const img of (msg.images || [])) {
         images.push(typeof img === 'string' ? img : img.url);
