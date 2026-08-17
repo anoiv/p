@@ -306,10 +306,11 @@ function handleUpload(e) {
       img.src = ev.target.result;
       img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:6px;';
       previews.appendChild(img);
+      // 每次读入完成后更新计数（FileReader 是异步的，不能在外面同步读 uploadedImages）
+      area.querySelector('.placeholder').textContent = `${uploadedImages.length} 张参考图`;
     };
     reader.readAsDataURL(file);
   });
-  area.querySelector('.placeholder').textContent = `${uploadedImages.length + files.length} 张参考图`;
   document.getElementById('fileInput').value = '';
 }
 
@@ -364,8 +365,24 @@ async function generateImage(prompt, apiKey) {
     // DALL-E: 用 aspect+resolution 映射到 DALL-E 尺寸
     const sizeMap = DALLE_SIZE_MAP[aspect] || {};
     const size = sizeMap[res] || '1024x1024';
-    const payload = { model: currentModel.id, prompt: prompt, n: 1, size: size };
-    resp = await fetch(API_BASE + '/images/generations', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+    if (uploadedImages.length) {
+      // 有参考图 → 走 /images/edits 图生图（multipart，浏览器自动带 boundary）
+      const fd = new FormData();
+      fd.append('model', currentModel.id);
+      fd.append('prompt', prompt);
+      fd.append('n', '1');
+      fd.append('size', size);
+      uploadedImages.forEach((u, i) => fd.append('image', dataURLtoBlob(u), `reference-${i}.png`));
+      resp = await fetch(API_BASE + '/images/edits', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + apiKey },
+        body: fd,
+        signal: ctrl.signal
+      });
+    } else {
+      const payload = { model: currentModel.id, prompt: prompt, n: 1, size: size };
+      resp = await fetch(API_BASE + '/images/generations', { method:'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+    }
     data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
     const images = (data.data || []).map(d => d.url || d.b64_json).filter(Boolean);
@@ -539,6 +556,16 @@ function escHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+function dataURLtoBlob(dataURL) {
+  const parts = dataURL.split(',');
+  const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/png';
+  const bin = atob(parts[1]);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
 }
 
 function escAttr(s) {
