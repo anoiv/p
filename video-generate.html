@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 视频生成 (MiniMax H3) - 何老师的提示词</title>
+<style>
+:root {
+  --bg: #0a0a10; --card: #12121c; --border: #262638;
+  --text: #e0e0f0; --text2: #9090b0; --text3: #606078;
+  --accent: #8B5CF6; --accent2: #A855F7; --red: #EF4444; --green: #10B981;
+  --radius: 12px; --font: 'Segoe UI', system-ui, sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f5f5f8; --card: #fff; --border: #e0e0e8;
+  --text: #1a1a2e; --text2: #666680; --text3: #999;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent2); }
+
+/* Header */
+header {
+  display: flex; align-items: center; gap: 16px; padding: 14px 24px;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+header .logo { font-size: 17px; font-weight: 700; }
+header .logo span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+header nav { display: flex; gap: 8px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+header nav a { color: var(--text2); text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; }
+header nav a:hover, header nav a.active { color: var(--text); background: var(--border); }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 15px; }
+
+/* Layout */
+.container { max-width: 1300px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 460px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 960px) { .container { grid-template-columns: 1fr; } }
+
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.panel h2 { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.panel h2 small { color: var(--text3); font-weight: 400; font-size: 12px; }
+
+/* Mode tabs */
+.mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.mode-tab {
+  padding: 10px 8px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text2); cursor: pointer; text-align: center;
+  transition: all 0.2s; font-size: 13px; line-height: 1.4;
+}
+.mode-tab:hover { border-color: var(--accent); color: var(--text); }
+.mode-tab.active {
+  background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(168,85,247,.15));
+  border-color: var(--accent); color: var(--text); font-weight: 600;
+}
+.mode-tab .m-icon { font-size: 15px; display: block; margin-bottom: 2px; }
+
+/* Form */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+.field label .req { color: var(--red); }
+.field select, .field input[type="text"], .field input[type="password"], .field input[type="number"], .field textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: var(--font); background: var(--bg); color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.field select:focus, .field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field small { font-size: 11px; color: var(--text3); margin-top: 3px; display: block; }
+.param-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Upload */
+.upload-area {
+  border: 2px dashed var(--border); border-radius: 10px; padding: 18px;
+  text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative;
+  font-size: 13px; color: var(--text3);
+}
+.upload-area:hover { border-color: var(--accent); }
+.upload-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.upload-previews .pv { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.upload-previews .pv img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.upload-previews .pv .del { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: var(--red); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 11px; line-height: 1; }
+.upload-previews .pv.audio-pv { display: flex; align-items: center; justify-content: center; flex-direction: column; background: var(--bg); font-size: 10px; color: var(--text2); }
+
+/* API key */
+.api-key-wrap { position: relative; }
+.api-key-wrap input { padding-right: 40px; }
+.api-key-wrap .toggle-vis { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text3); }
+
+/* Buttons */
+.btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; width: 100%; padding: 13px; font-size: 15px; }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); }
+
+/* Cost estimate */
+.cost-note { font-size: 11px; color: var(--text3); margin-top: 8px; line-height: 1.6; }
+.cost-note b { color: var(--green); }
+
+/* Result */
+#resultArea { display: flex; flex-direction: column; gap: 14px; }
+#resultDisplay { min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text3); }
+#resultDisplay video { max-width: 100%; max-height: 460px; border-radius: var(--radius); background: #000; }
+.result-actions { display: flex; gap: 8px; }
+.result-actions button { flex: 1; }
+
+/* Progress */
+.progress-wrap { margin: 14px 0; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 3px; width: 0%; transition: width 0.5s; }
+.progress-text { font-size: 12px; color: var(--text2); text-align: center; margin-top: 6px; }
+.progress-meta { font-size: 11px; color: var(--text3); text-align: center; margin-top: 2px; }
+
+/* History */
+.history-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s; }
+.history-item:hover { border-color: var(--accent); }
+.history-item .h-top { display: flex; gap: 8px; align-items: center; }
+.history-item .h-prompt { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.history-item .h-meta { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.history-item .h-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.h-status.queued { background: rgba(139,92,246,.15); color: var(--accent2); }
+.h-status.running { background: rgba(16,185,129,.15); color: var(--green); }
+.h-status.success { background: rgba(16,185,129,.15); color: var(--green); }
+.h-status.failed { background: rgba(239,68,68,.15); color: var(--red); }
+
+/* Error / success */
+.error-msg { padding: 12px; border-radius: 8px; background: #FEE2E2; color: #DC2626; font-size: 13px; }
+[data-theme="dark"] .error-msg { background: #7F1D1D; color: #FCA5A5; }
+.success-msg { padding: 12px; border-radius: 8px; background: #D1FAE5; color: #059669; font-size: 13px; }
+[data-theme="dark"] .success-msg { background: #064E3B; color: #6EE7B7; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 10px 24px; font-size: 14px; z-index: 999; box-shadow: 0 8px 30px rgba(0,0,0,0.4); animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* Spinner */
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>何老师的提示词</span> · AI 视频</div>
+  <nav>
+    <a href="index.html">提示词库</a>
+    <a href="generate.html">AI 生图</a>
+    <a href="video-generate.html" class="active">AI 视频</a>
+    <button class="theme-btn" onclick="toggleTheme()" title="切换主题">🌓</button>
+  </nav>
+</header>
+
+<div class="container">
+  <!-- 左侧：输入面板 -->
+  <div>
+    <div class="panel">
+      <h2>🎬 MiniMax H3 视频生成 <small>AutoDL 驱动</small></h2>
+
+      <div class="field">
+        <label>生成模式</label>
+        <div class="mode-tabs" id="modeTabs"></div>
+      </div>
+
+      <div id="formArea"></div>
+
+      <div class="field">
+        <label>API Token</label>
+        <div class="api-key-wrap">
+          <input type="password" id="apiKeyInput" placeholder="输入你的 AutoDL Token">
+          <button class="toggle-vis" onclick="toggleApiKeyVis()" title="显示/隐藏">👁</button>
+        </div>
+        <small>获取：autodl.art 登录 → 大模型 → 令牌管理 → 创建令牌（分组选 ComfyUI）。仅保存在你的浏览器本地。</small>
+      </div>
+
+      <button class="btn btn-primary" id="genBtn" onclick="startGeneration()">⚡ 开始生成</button>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">排队中...</div>
+        <div class="progress-meta" id="progressMeta"></div>
+      </div>
+
+      <div class="cost-note" id="costNote"></div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="panel" style="margin-top:16px;">
+      <h2>📋 生成历史 <small style="font-weight:400">未完成任务点开可继续查询</small></h2>
+      <div id="historyList" style="max-height:340px;overflow-y:auto;">
+        <p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">暂无记录</p>
+      </div>
+      <button class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="clearHistory()">清空历史</button>
+    </div>
+  </div>
+
+  <!-- 右侧：结果面板 -->
+  <div class="panel" id="resultPanel">
+    <h2>📺 生成结果</h2>
+    <div id="resultDisplay">
+      <p style="color:var(--text3);">选择模式、填写内容并点击生成。视频生成一般需要 5 分钟以上，可关页面稍后回来查看。</p>
+    </div>
+    <div class="result-actions" id="resultActions" style="display:none;">
+      <button class="btn btn-primary" onclick="downloadResult()">💾 下载视频</button>
+      <button class="btn btn-outline" onclick="copyResultUrl()">🔗 复制链接</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== 全局状态 =====================
+const API_BASE = 'https://www.autodl.art';
+const LS_TOKEN = 'video-api-token';
+const LS_HISTORY = 'video-gen-history';
+const LS_THEME = 'video-generate-theme';
+let currentMode = null;
+let state = { images: [], audios: [], firstFrame: null, lastFrame: null };
+let currentTask = null;   // { taskId, workflowId, mode, prompt }
+let pollTimer = null;
+let pollStart = 0;
+
+// ===================== 模式定义（7 种 H3 生成模式） =====================
+const RES_480_768_4 = ['480p竖','768p竖','480p横','768p横'];
+const RES_480_768_6 = ['480p竖','768p竖','480p横','768p横','480p(1:1)','768p(1:1)'];
+const RES_1080_6 = ['480p竖','768p竖','1080p竖','480p横','768p横','1080p横'];
+const RES_9 = ['480p竖','768p竖','1080p竖','480p横','768p横','1080p横','480p(1:1)','768p(1:1)','1080p(1:1)'];
+
+const MODES = [
+  { key:'t2v',  id:'minimax_h3_lightx2v_no_pic',           name:'文生视频', icon:'✍️', desc:'纯文字描述 → 视频',
+    fields:{ prompt:{req:true, ph:'描述画面内容、镜头、风格...'}, duration:{def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_6} } },
+  { key:'fl2v', id:'minimax_h3_lightx2v',                  name:'首尾帧', icon:'🎞️', desc:'首帧 + 尾帧 → 视频',
+    fields:{ prompt:{req:true, ph:'描述中间的运动过程...'}, first_frame:{req:true}, last_frame:{req:true}, duration:{def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_4} } },
+  { key:'r2v',  id:'minimax_h3_lightx2v_v5',               name:'多图参考', icon:'🖼️', desc:'1~9 张参考图（首张必填）',
+    fields:{ prompt:{req:true, ph:'描述角色动作、场景...'}, ref_images:{req:true,min:1,max:9,ph:'可多选，最多 9 张'}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_9}, seed:{} } },
+  { key:'r2v15',id:'minimax_h3_lightx2v_v5_15s',           name:'多图15秒', icon:'⏱️', desc:'多图参考，最长 15 秒',
+    fields:{ prompt:{req:true, ph:'描述角色动作、场景...'}, ref_images:{req:true,min:1,max:9,ph:'可多选，最多 9 张'}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_6}, seed:{} } },
+  { key:'atov', id:'minimax_h3_image_audio_to_video',      name:'图+音频对口型', icon:'🎤', desc:'人物图 + 语音 → 自动对口型',
+    fields:{ image:{req:true,ph:'上传 1 张人物图'}, audio:{req:true,ph:'上传 1 段语音'}, audio_duration:{label:'时长(秒)',def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_1080_6} } },
+  { key:'atov2',id:'minimax_h3_image_audio_to_video_v2',   name:'多图多音频', icon:'🎭', desc:'多图 + 多音频，多人对话',
+    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9,ph:'可选，参考图'}, ref_audios:{min:0,max:3,ph:'可选，参考音频'}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_1080_6}, seed:{} } },
+  { key:'atov2s',id:'minimax_h3_image_audio_to_video_v2_15s', name:'多图多音频15秒', icon:'🎬', desc:'多图多音频，最长 15 秒',
+    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9,ph:'可选，参考图'}, ref_audios:{min:0,max:3,ph:'可选，参考音频'}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_4}, seed:{} } },
+];
+
+// ===================== 初始化 =====================
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(LS_THEME);
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches && !saved) document.documentElement.setAttribute('data-theme', 'dark');
+
+  const savedKey = localStorage.getItem(LS_TOKEN);
+  if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+
+  renderModeTabs();
+  renderForm();
+  renderHistory();
+  updateCostNote();
+});
+
+function renderModeTabs() {
+  const el = document.getElementById('modeTabs');
+  el.innerHTML = MODES.map(m => `
+    <div class="mode-tab ${currentMode?.key===m.key?'active':''}" onclick="switchMode('${m.key}')">
+      <span class="m-icon">${m.icon}</span>${m.name}
+    </div>`).join('');
+}
+
+function switchMode(key) {
+  const promptEl = document.getElementById('f_prompt');
+  if (promptEl) state.prompt = promptEl.value.trim();
+  currentMode = MODES.find(m => m.key === key);
+  state.images = []; state.audios = []; state.firstFrame = null; state.lastFrame = null;
+  state.image = null; state.audio = null;
+  renderModeTabs();
+  renderForm();
+  updateCostNote();
+}
+
+// ===================== 表单渲染 =====================
+function renderForm() {
+  if (!currentMode) return;
+  const f = currentMode.fields;
+  const html = [];
+  if (f.prompt) html.push(`
+    <div class="field">
+      <label>提示词 ${f.prompt.req?'<span class="req">*</span>':''}</label>
+      <textarea id="f_prompt" placeholder="${f.prompt.ph || '描述你想生成的视频内容'}">${state.prompt||''}</textarea>
+      <small>写清楚画面主体、动作、镜头、光线、风格，效果更好。可参考 H3 提示词结构。</small>
+    </div>`);
+  if (f.first_frame || f.last_frame) html.push(`
+    <div class="param-row">
+      ${f.first_frame?`<div class="field"><label>首帧图 <span class="req">*</span></label><div class="upload-area" id="ua_first" onclick="document.getElementById('file_first').click()"><div class="up-placeholder">📁 上传首帧</div><div class="upload-previews" id="pv_first"></div></div><input type="file" id="file_first" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'firstFrame','pv_first','ua_first')"></div>`:''}
+      ${f.last_frame?`<div class="field"><label>尾帧图 <span class="req">*</span></label><div class="upload-area" id="ua_last" onclick="document.getElementById('file_last').click()"><div class="up-placeholder">📁 上传尾帧</div><div class="upload-previews" id="pv_last"></div></div><input type="file" id="file_last" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'lastFrame','pv_last','ua_last')"></div>`:''}
+    </div>`);
+  if (f.ref_images) html.push(`
+    <div class="field">
+      <label>参考图片 ${f.ref_images.req?'<span class="req">*</span>':''}</label>
+      <div class="upload-area" onclick="document.getElementById('file_imgs').click()">
+        <div class="up-placeholder">📁 ${f.ref_images.ph||'点击上传参考图（可多选）'}</div>
+        <div class="upload-previews" id="pv_imgs"></div>
+      </div>
+      <input type="file" id="file_imgs" accept="image/*" multiple style="display:none" onchange="handleImages(event)">
+    </div>`);
+  if (f.ref_audios) html.push(`
+    <div class="field">
+      <label>参考音频</label>
+      <div class="upload-area" onclick="document.getElementById('file_auds').click()">
+        <div class="up-placeholder">🎵 ${f.ref_audios.ph||'点击上传音频（可多选）'}</div>
+        <div class="upload-previews" id="pv_auds"></div>
+      </div>
+      <input type="file" id="file_auds" accept="audio/*,video/mp4" multiple style="display:none" onchange="handleAudios(event)">
+      <small>支持 MP3 / WAV / MP4 / FLAC</small>
+    </div>`);
+  if (f.image) html.push(`
+    <div class="field"><label>人物图片 <span class="req">*</span></label>
+      <div class="upload-area" onclick="document.getElementById('file_simg').click()"><div class="up-placeholder">📁 ${f.image.ph}</div><div class="upload-previews" id="pv_simg"></div></div>
+      <input type="file" id="file_simg" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'image','pv_simg')">
+    </div>`);
+  if (f.audio) html.push(`
+    <div class="field"><label>语音音频 <span class="req">*</span></label>
+      <div class="upload-area" onclick="document.getElementById('file_saud').click()"><div class="up-placeholder">🎵 ${f.audio.ph}</div><div class="upload-previews" id="pv_saud"></div></div>
+      <input type="file" id="file_saud" accept="audio/*,video/mp4" style="display:none" onchange="handleSingleUpload(event,'audio','pv_saud')">
+    </div>`);
+  if (f.duration || f.audio_duration) {
+    const d = f.duration || f.audio_duration;
+    html.push(`
+      <div class="param-row">
+        <div class="field"><label>${f.audio_duration?'音频时长':'时长'}（秒）</label>
+          <input type="number" id="f_duration" value="${state.duration||d.def}" min="${d.min}" max="${d.max}">
+          <small>范围 ${d.min} ~ ${d.max} 秒</small>
+        </div>
+        <div class="field"><label>分辨率</label>
+          <select id="f_resolution">${(f.resolution.opts).map(o=>`<option value="${o}" ${o===(state.resolution||f.resolution.def)?'selected':''}>${o}</option>`).join('')}</select>
+        </div>
+      </div>`);
+  } else {
+    html.push(`
+      <div class="field"><label>分辨率</label>
+        <select id="f_resolution">${(f.resolution.opts).map(o=>`<option value="${o}" ${o===(state.resolution||f.resolution.def)?'selected':''}>${o}</option>`).join('')}</select>
+      </div>`);
+  }
+  if (f.seed) html.push(`
+    <div class="field"><label>随机种子（可选，固定种子可复现）</label>
+      <input type="number" id="f_seed" value="${state.seed||''}" placeholder="留空随机"></div>`);
+  document.getElementById('formArea').innerHTML = html.join('');
+}
+
+// ===================== 上传处理 =====================
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImages(e) {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  const max = currentMode.fields.ref_images.max || 9;
+  for (const file of files) {
+    if (state.images.length >= max) { toast(`最多 ${max} 张`); break; }
+    try {
+      const url = await fileToDataURL(file);
+      state.images.push(url);
+      renderImgPreviews('pv_imgs', state.images, 'images');
+    } catch(err) { toast('读取图片失败'); }
+  }
+  e.target.value = '';
+}
+async function handleAudios(e) {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  const max = currentMode.fields.ref_audios.max || 3;
+  for (const file of files) {
+    if (state.audios.length >= max) { toast(`最多 ${max} 段`); break; }
+    try {
+      const url = await fileToDataURL(file);
+      state.audios.push({ url, name: file.name, size: file.size });
+      renderAudPreviews();
+    } catch(err) { toast('读取音频失败'); }
+  }
+  e.target.value = '';
+}
+function handleSingleUpload(e, key, pvId, uaId) {
+  const file = (e.target.files || [])[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state[key] = { url: ev.target.result, name: file.name, size: file.size };
+    const pv = document.getElementById(pvId);
+    if (state[key].url.startsWith('data:image')) {
+      pv.innerHTML = `<div class="pv"><img src="${state[key].url}"><button class="del" onclick="clearSingle('${key}','${pvId}')">✕</button></div>`;
+    } else {
+      pv.innerHTML = `<div class="pv audio-pv">🎵<span>${file.name.slice(0,10)}</span><button class="del" onclick="clearSingle('${key}','${pvId}')">✕</button></div>`;
+    }
+    const ph = document.querySelector(`#${uaId} .up-placeholder`);
+    if (ph) ph.textContent = '✅ 已上传';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function clearSingle(key, pvId) {
+  state[key] = null;
+  document.getElementById(pvId).innerHTML = '';
+  toast('已移除');
+}
+function renderImgPreviews(elId, arr, stateKey) {
+  const el = document.getElementById(elId);
+  el.innerHTML = arr.map((u,i)=>`
+    <div class="pv"><img src="${u}"><button class="del" onclick="removeItem('${stateKey}',${i})">✕</button></div>`).join('');
+}
+function renderAudPreviews() {
+  const el = document.getElementById('pv_auds');
+  el.innerHTML = state.audios.map((a,i)=>`
+    <div class="pv audio-pv">🎵<span>${a.name.slice(0,10)}</span><button class="del" onclick="removeItem('audios',${i})">✕</button></div>`).join('');
+}
+function removeItem(key, i) {
+  state[key].splice(i, 1);
+  if (key === 'audios') renderAudPreviews(); else renderImgPreviews('pv_imgs', state.images, 'images');
+}
+
+// ===================== 生成 =====================
+function buildBody() {
+  if (!currentMode) return null;
+  const f = currentMode.fields;
+  const b = {};
+  const promptEl = document.getElementById('f_prompt');
+  if (promptEl) b.prompt = promptEl.value.trim();
+  const durEl = document.getElementById('f_duration');
+  if (durEl) b[f.audio_duration ? 'audio_duration' : 'duration'] = clamp(parseInt(durEl.value)||f.duration?.def||5, f.duration?.min||f.audio_duration?.min||1, f.duration?.max||f.audio_duration?.max||15);
+  const resEl = document.getElementById('f_resolution');
+  if (resEl) b.resolution = resEl.value;
+  const seedEl = document.getElementById('f_seed');
+  if (seedEl && seedEl.value) b.seed = parseInt(seedEl.value);
+  if (f.ref_images) state.images.forEach((u,i) => b['ref_image_'+i] = u);
+  if (f.ref_audios) state.audios.forEach((a,i) => b['ref_audio_'+i] = a.url);
+  if (f.first_frame && state.firstFrame) b.first_frame = state.firstFrame.url;
+  if (f.last_frame && state.lastFrame) b.last_frame = state.lastFrame.url;
+  if (f.image && state.image) b.ref_image_0 = state.image.url;
+  if (f.audio && state.audio) b.ref_audio_0 = state.audio.url;
+  return b;
+}
+
+function validate(body) {
+  if (!currentMode) return '请选择生成模式';
+  const f = currentMode.fields;
+  if (f.prompt && !body.prompt) return '请输入提示词';
+  if (f.first_frame && !state.firstFrame) return '请上传首帧图';
+  if (f.last_frame && !state.lastFrame) return '请上传尾帧图';
+  if (f.ref_images && f.ref_images.req && !state.images.length) return '请至少上传 1 张参考图';
+  if (f.image && !state.image) return '请上传人物图片';
+  if (f.audio && !state.audio) return '请上传语音音频';
+  return null;
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+async function startGeneration() {
+  const token = document.getElementById('apiKeyInput').value.trim();
+  if (!token) return toast('⚠️ 请输入 API Token');
+  localStorage.setItem(LS_TOKEN, token);
+
+  const body = buildBody();
+  const err = validate(body);
+  if (err) return toast('⚠️ ' + err);
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = '⏳ 提交中...';
+  hideProgress();
+  document.getElementById('resultActions').style.display = 'none';
+  document.getElementById('resultDisplay').innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/comfyui/comfyui_workflow/${currentMode.id}`, {
+      method: 'POST',
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const j = await res.json();
+    if (j.code !== 'Success') throw new Error(j.msg || '提交失败');
+    currentTask = { taskId: j.data.task_id, workflowId: currentMode.id, mode: currentMode.name, prompt: body.prompt || '音频/参考图模式', resolution: body.resolution || '', time: Date.now(), status: j.data.status || 'QUEUED' };
+    addHistory(currentTask);
+    renderHistory();
+    toast('✅ 已提交，任务 ID: ' + j.data.task_id.slice(0,8));
+    startPolling(j.data.task_id, token);
+  } catch(e) {
+    document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ ${escHtml(e.message)}</div>`;
+    toast('提交失败: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ 开始生成';
+  }
+}
+
+// ===================== 轮询 =====================
+function startPolling(taskId, token, silent) {
+  stopPolling();
+  pollStart = Date.now();
+  showProgress(15, '排队中...');
+  document.getElementById('resultDisplay').innerHTML = '<div class="spinner"></div>';
+  pollTimer = setInterval(() => poll(taskId, token), 5000);
+  poll(taskId, token);
+}
+
+async function poll(taskId, token) {
+  const task = findHistory(taskId);
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/comfyui/comfyui_workflow/result/${taskId}`, {
+      headers: { 'Authorization': token }
+    });
+    const j = await res.json();
+    if (j.code !== 'Success') throw new Error(j.msg || '查询失败');
+    const d = j.data;
+    const elapsed = Math.round((Date.now() - pollStart) / 1000);
+    updateHistory(taskId, { status: d.status });
+
+    if (d.status === 'SUCCESS') {
+      stopPolling();
+      const results = d.results || [];
+      const video = results.find(r => r.type === 'video' || r.file_type === 'mp4') || results[0];
+      if (!video) {
+        document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">⚠️ 任务成功但未返回视频。原始数据：<br><code>${escHtml(JSON.stringify(results))}</code></div>`;
+        return;
+      }
+      updateHistory(taskId, { status: 'SUCCESS', url: video.url });
+      showResult({ url: video.url, mode: task?.mode || currentMode?.name, prompt: task?.prompt || '' });
+      hideProgress();
+      toast('🎉 视频生成完成');
+    } else if (d.status === 'FAILED' || d.status === 'ERROR') {
+      stopPolling();
+      updateHistory(taskId, { status: 'FAILED' });
+      document.getElementById('resultDisplay').innerHTML = `<div class="error-msg">❌ 生成失败：${escHtml(d.message || '任务失败')}</div>`;
+      hideProgress();
+    } else {
+      const secs = Math.floor(elapsed);
+      const mm = String(Math.floor(secs/60)).padStart(2,'0');
+      const ss = String(secs%60).padStart(2,'0');
+      showProgress(d.status === 'RUNNING' ? 60 : 30, d.status === 'RUNNING' ? '正在生成视频...' : '排队中...');
+      document.getElementById('progressMeta').textContent = `已等待 ${mm}:${ss} · 视频生成一般需 5 分钟以上`;
+    }
+  } catch(e) {
+    // 查询失败（网络/临时），保留轮询，仅提示
+    document.getElementById('progressMeta').textContent = '网络波动，继续尝试...';
+  }
+}
+
+function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+// ===================== 结果展示 =====================
+function showResult(result) {
+  const div = document.getElementById('resultDisplay');
+  div.innerHTML = `<video src="${result.url}" controls loop playsinline style="max-width:100%;border-radius:12px;"></video><p style="color:var(--text3);font-size:12px;margin-top:8px;">⚠️ 结果链接有时效，建议立即下载保存。</p>`;
+  document.getElementById('resultActions').style.display = 'flex';
+  currentResult = result;
+}
+let currentResult = null;
+
+function downloadResult() {
+  if (!currentResult) return;
+  const a = document.createElement('a');
+  a.href = currentResult.url;
+  a.download = `h3-video-${Date.now()}.mp4`;
+  a.target = '_blank';
+  a.click();
+}
+async function copyResultUrl() {
+  if (!currentResult) return;
+  try {
+    await navigator.clipboard.writeText(currentResult.url);
+    toast('✅ 链接已复制');
+  } catch(e) { toast('⚠️ 复制失败'); }
+}
+
+// ===================== 历史记录 =====================
+function addHistory(task) {
+  let hist = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+  hist.unshift(task);
+  if (hist.length > 40) hist = hist.slice(0, 40);
+  localStorage.setItem(LS_HISTORY, JSON.stringify(hist));
+}
+function findHistory(taskId) {
+  const hist = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+  return hist.find(h => h.taskId === taskId);
+}
+function updateHistory(taskId, patch) {
+  const hist = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+  const idx = hist.findIndex(h => h.taskId === taskId);
+  if (idx >= 0) { hist[idx] = { ...hist[idx], ...patch }; localStorage.setItem(LS_HISTORY, JSON.stringify(hist)); }
+  renderHistory();
+}
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  const hist = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+  if (!hist.length) { el.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">暂无记录</p>'; return; }
+  el.innerHTML = hist.map((h,i) => {
+    const st = (h.status || 'QUEUED').toLowerCase();
+    const stText = { queued:'排队', running:'生成中', success:'成功', failed:'失败' }[st] || h.status;
+    const time = new Date(h.time).toLocaleString('zh-CN');
+    return `
+    <div class="history-item" onclick="openHistoryItem(${i})">
+      <div class="h-top">
+        <span style="font-size:15px;">🎬</span>
+        <span class="h-prompt">${escHtml(h.mode)}${h.resolution? ' · '+escHtml(h.resolution):''} · ${escHtml(h.prompt||'').slice(0,30)}</span>
+        <span class="h-status ${st}">${stText}</span>
+      </div>
+      <div class="h-meta">${time} · ${h.taskId.slice(0,8)}</div>
+    </div>`;
+  }).join('');
+}
+function openHistoryItem(i) {
+  const hist = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+  const h = hist[i];
+  if (!h) return;
+  const token = document.getElementById('apiKeyInput').value.trim() || localStorage.getItem(LS_TOKEN) || '';
+  if (h.status === 'SUCCESS' && h.url) {
+    showResult({ url: h.url, mode: h.mode, prompt: h.prompt });
+    return;
+  }
+  if (!token) return toast('⚠️ 需要 Token 才能查询，请填入你的 AutoDL Token');
+  toast('🔄 正在查询任务...');
+  startPolling(h.taskId, token, true);
+}
+function clearHistory() {
+  localStorage.removeItem(LS_HISTORY);
+  renderHistory();
+  toast('🗑 历史已清空');
+}
+
+// ===================== 进度 / 费用提示 =====================
+function showProgress(pct, text) {
+  const w = document.getElementById('progressWrap');
+  w.classList.add('show');
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+}
+function hideProgress() {
+  document.getElementById('progressWrap').classList.remove('show');
+}
+function updateCostNote() {
+  if (!currentMode) return;
+  const f = currentMode.fields;
+  const dur = f.duration?.max || f.audio_duration?.max || 15;
+  const res = (f.resolution?.opts || []).some(r => r.includes('1080'));
+  const el = document.getElementById('costNote');
+  el.innerHTML = `💰 <b>计费参考</b>：480P/768P 白天约 2 分/秒、夜间 1 分/秒（活动价）；1080P 约 10 分/秒。<br>
+  示例：768P 5 秒 ≈ ${res ? '0.1~0.5 元' : '0.1 元'}；10 秒 ≈ ${res ? '0.2~1 元' : '0.2 元'}。<br>
+  <span style="color:var(--text3)">以实际结算为准，余额不足会报错。</span>`;
+}
+
+// ===================== 工具函数 =====================
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+function toggleApiKeyVis() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem(LS_THEME, next);
+}
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+<a href="index.html" style="position:fixed;bottom:24px;left:24px;z-index:999;width:44px;height:44px;border-radius:50%;background:#fff;color:#666;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.1);" title="返回主页"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+</body>
+</html>
