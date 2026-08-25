@@ -195,6 +195,28 @@ footer { padding: 2.5rem; text-align: center; color: var(--text-muted); font-siz
   .hero { padding: 0 1.5rem; }
   .hero-scroll { left: 1.5rem; }
 }
+
+/* ---------- Works ---------- */
+.works-group { margin-bottom: 2.5rem; }
+.works-group h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: .6rem; }
+.works-group h3 .w-count { color: var(--text-muted); font-size: .8rem; font-weight: 400; }
+.works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.video-card { background: var(--surface-color); border: 1px solid rgba(255,255,255,.04); border-radius: 8px; overflow: hidden; cursor: pointer; transition: var(--transition); }
+.video-card:hover { border-color: rgba(229,9,20,.5); transform: translateY(-3px); }
+.video-card .v-thumb { position: relative; aspect-ratio: 9/10; background: #1a1a22; overflow: hidden; }
+.video-card .v-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-card .v-thumb .v-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(10,10,12,.25); }
+.video-card .v-thumb .v-play span { width: 44px; height: 44px; border-radius: 50%; background: rgba(229,9,20,.9); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; padding-left: 2px; transition: var(--transition); }
+.video-card:hover .v-play span { transform: scale(1.15); }
+.video-card .v-meta { padding: .7rem .9rem; }
+.video-card .v-meta h4 { font-size: .82rem; font-weight: 600; line-height: 1.4; }
+.video-modal-body { padding: 1.5rem 1.5rem 1.8rem; }
+.video-modal-body .vm-meta { display: flex; gap: .6rem; margin-bottom: .8rem; }
+.video-modal-body .vm-meta span { font-size: .7rem; letter-spacing: 2px; color: var(--accent-color); border: 1px solid rgba(229,9,20,.4); border-radius: 20px; padding: .25rem .8rem; text-transform: uppercase; }
+.video-modal-body h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; }
+.video-wrap { width: 100%; background: #000; border-radius: 10px; overflow: hidden; }
+.video-wrap video { width: 100%; max-height: 60vh; display: block; }
+
 </style>
 </head>
 <body>
@@ -295,6 +317,12 @@ footer { padding: 2.5rem; text-align: center; color: var(--text-muted); font-siz
     </div>
 
   </div>
+</section>
+
+<!-- ============ WORKS ============ -->
+<section id="works">
+  <div class="section-title">03 / 作品展示</div>
+  <div id="worksApp"></div>
 </section>
 
 <!-- ============ PLATFORM ============ -->
@@ -443,6 +471,17 @@ footer { padding: 2.5rem; text-align: center; color: var(--text-muted); font-siz
   </div>
 </div>
 
+<div class="modal" id="videoModal">
+  <div class="modal-wrapper">
+    <button class="modal-close" onclick="closeVideoModal()" aria-label="关闭">&times;</button>
+    <div class="video-modal-body">
+      <div class="vm-meta"><span>作品展示</span></div>
+      <h2 id="vmTitle"></h2>
+      <div class="video-wrap"><video id="vmVideo" controls playsinline></video></div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ---------- 滚动导航高亮 ----------
 const navLinks = document.querySelectorAll('nav a');
@@ -479,6 +518,56 @@ document.querySelectorAll('.modal').forEach(modal => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(closeModal);
 });
+
+// ===================== 作品展示 =====================
+const WORKS = [
+  { title: '学生作业', dir: '学生作业', videos: ['1.mp4','2.mp4','3.mp4'] },
+  { title: '课堂案例', dir: '课堂案例', videos: ['8月24日.mp4','8月25日.mp4','8月25日(1).mp4','8月25日(2).mp4','8月25日(3).mp4','8月25日(4).mp4','8月25日(5).mp4','8月25日(6).mp4','8月25日(7).mp4','8月25日(8).mp4','上岸第一剑.mp4'] },
+];
+const WORKS_ALL = [];
+WORKS.forEach(g => g.videos.forEach(f => WORKS_ALL.push({ g: g.title, dir: g.dir, file: f, title: g.title + ' · ' + f.replace('.mp4','') })));
+function renderWorks() {
+  const el = document.getElementById('worksApp');
+  el.innerHTML = WORKS.map(g => `
+    <div class="works-group">
+      <h3>${g.title} <span class="w-count">${g.videos.length} 个</span></h3>
+      <div class="works-grid">
+        ${g.videos.map(f => {
+          const i = WORKS_ALL.findIndex(w => w.file === f && w.dir === g.dir);
+          const encDir = encodeURI(g.dir), encF = encodeURI(f);
+          return `<div class="video-card" onclick="openVideo(${i})">
+            <div class="v-thumb"><img src="videos/${encDir}/${encF}.jpg" loading="lazy" onerror="this.style.display='none'"><div class="v-play"><span>▶</span></div></div>
+            <div class="v-meta"><h4>${g.title} · ${f.replace('.mp4','')}</h4></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+let lastVideo = null;
+function openVideo(i) {
+  const v = WORKS_ALL[i];
+  if (!v) return;
+  document.getElementById('vmTitle').textContent = v.title;
+  const video = document.getElementById('vmVideo');
+  video.poster = 'videos/' + encodeURI(v.dir) + '/' + encodeURI(v.file) + '.jpg';
+  video.src = 'videos/' + encodeURI(v.dir) + '/' + encodeURI(v.file);
+  lastVideo = video;
+  document.getElementById('videoModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  video.load(); video.play().catch(()=>{});
+}
+function closeVideoModal() {
+  const video = document.getElementById('vmVideo');
+  video.pause(); video.removeAttribute('src'); video.load();
+  lastVideo = null;
+  document.getElementById('videoModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && lastVideo) { lastVideo.pause(); lastVideo.removeAttribute('src'); lastVideo.load(); lastVideo = null; } });
+document.addEventListener('DOMContentLoaded', renderWorks);
+document.getElementById('videoModal').addEventListener('click', e => { if (e.target.id === 'videoModal') closeVideoModal(); });
+
 </script>
 </body>
 </html>
