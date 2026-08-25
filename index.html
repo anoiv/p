@@ -521,11 +521,19 @@ document.addEventListener('keydown', e => {
 
 // ===================== 作品展示 =====================
 const WORKS = [
-  { title: '学生作业', dir: '学生作业', videos: ['1.mp4','2.mp4','3.mp4'] },
+  { title: '学生作业', dir: '学生作业', videos: [
+    { file: '1.mp4', name: '学生作业 · 2608孙晓晴' },
+    { file: '2.mp4', name: '学生作业 · 2068郭佳蕊' },
+    { file: '3.mp4', name: '学生作业 · 2608孙晓晴' },
+  ]},
   { title: '课堂案例', dir: '课堂案例', videos: ['8月24日.mp4','8月25日.mp4','8月25日(1).mp4','8月25日(2).mp4','8月25日(3).mp4','8月25日(4).mp4','8月25日(5).mp4','8月25日(6).mp4','8月25日(7).mp4','8月25日(8).mp4','上岸第一剑.mp4'] },
 ];
 const WORKS_ALL = [];
-WORKS.forEach(g => g.videos.forEach(f => WORKS_ALL.push({ g: g.title, dir: g.dir, file: f, title: g.title + ' · ' + f.replace('.mp4','') })));
+WORKS.forEach(g => g.videos.forEach(f => {
+  const file = typeof f === 'string' ? f : f.file;
+  const name = typeof f === 'string' ? (g.title + ' · ' + f.replace('.mp4','')) : f.name;
+  WORKS_ALL.push({ g: g.title, dir: g.dir, file, title: name });
+}));
 function renderWorks() {
   const el = document.getElementById('worksApp');
   el.innerHTML = WORKS.map(g => `
@@ -533,11 +541,12 @@ function renderWorks() {
       <h3>${g.title} <span class="w-count">${g.videos.length} 个</span></h3>
       <div class="works-grid">
         ${g.videos.map(f => {
-          const i = WORKS_ALL.findIndex(w => w.file === f && w.dir === g.dir);
-          const encDir = encodeURI(g.dir), encF = encodeURI(f);
+          const file = typeof f === 'string' ? f : f.file;
+          const i = WORKS_ALL.findIndex(w => w.file === file && w.dir === g.dir);
+          const encDir = encodeURI(g.dir), encF = encodeURI(file);
           return `<div class="video-card" onclick="openVideo(${i})">
             <div class="v-thumb"><img src="videos/${encDir}/${encF}.jpg" loading="lazy" onerror="this.style.display='none'"><div class="v-play"><span>▶</span></div></div>
-            <div class="v-meta"><h4>${g.title} · ${f.replace('.mp4','')}</h4></div>
+            <div class="v-meta"><h4>${WORKS_ALL[i].title}</h4></div>
           </div>`;
         }).join('')}
       </div>
