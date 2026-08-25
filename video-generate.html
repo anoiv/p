@@ -58,6 +58,7 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 .field { margin-bottom: 12px; }
 .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
 .field label .req { color: var(--red); }
+.field label code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 11px; color: var(--accent2); }
 .field select, .field input[type="text"], .field input[type="password"], .field input[type="number"], .field textarea {
   width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
   font-size: 13px; font-family: var(--font); background: var(--bg); color: var(--text);
@@ -68,18 +69,28 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 .field small { font-size: 11px; color: var(--text3); margin-top: 3px; display: block; }
 .param-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* Upload */
+/* Reference slots */
+.ref-slot { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--bg); }
+.ref-slot-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ref-slot-title { font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; }
+.ref-slot-label { flex: 1; min-width: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--card); color: var(--text); outline: none; }
+.ref-slot-label:focus { border-color: var(--accent); }
+.ref-slot .upload-area { padding: 12px; min-height: 84px; display: flex; align-items: center; justify-content: center; }
+.ref-slot .upload-area.has { padding: 6px; }
+.ref-slot .upload-area img { max-width: 100%; max-height: 170px; border-radius: 6px; display: block; }
+.aud-badge { font-size: 13px; color: var(--text2); }
+.add-slot { width: 100%; padding: 8px; font-size: 13px; }
+.slot-clear { margin-top: 8px; background: transparent; border: 1px solid var(--border); color: var(--text3); border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.slot-clear:hover { border-color: var(--red); color: var(--red); }
+
+/* Upload area (shared) */
 .upload-area {
   border: 2px dashed var(--border); border-radius: 10px; padding: 18px;
   text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative;
   font-size: 13px; color: var(--text3);
 }
 .upload-area:hover { border-color: var(--accent); }
-.upload-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.upload-previews .pv { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-.upload-previews .pv img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.upload-previews .pv .del { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: var(--red); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 11px; line-height: 1; }
-.upload-previews .pv.audio-pv { display: flex; align-items: center; justify-content: center; flex-direction: column; background: var(--bg); font-size: 10px; color: var(--text2); }
+.upload-area .up-placeholder { pointer-events: none; }
 
 /* API key */
 .api-key-wrap { position: relative; }
@@ -100,7 +111,7 @@ header nav a:hover, header nav a.active { color: var(--text); background: var(--
 
 /* Result */
 #resultArea { display: flex; flex-direction: column; gap: 14px; }
-#resultDisplay { min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text3); }
+#resultDisplay { min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text3); flex-direction: column; }
 #resultDisplay video { max-width: 100%; max-height: 460px; border-radius: var(--radius); background: #000; }
 .result-actions { display: flex; gap: 8px; }
 .result-actions button { flex: 1; }
@@ -215,8 +226,8 @@ const LS_TOKEN = 'video-api-token';
 const LS_HISTORY = 'video-gen-history';
 const LS_THEME = 'video-generate-theme';
 let currentMode = null;
-let state = { images: [], audios: [], firstFrame: null, lastFrame: null };
-let currentTask = null;   // { taskId, workflowId, mode, prompt }
+let state = { images: [], audios: [], firstFrame: null, lastFrame: null, image: null, audio: null, prompt: '' };
+let currentTask = null;
 let pollTimer = null;
 let pollStart = 0;
 
@@ -231,16 +242,16 @@ const MODES = [
     fields:{ prompt:{req:true, ph:'描述画面内容、镜头、风格...'}, duration:{def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_6} } },
   { key:'fl2v', id:'minimax_h3_lightx2v',                  name:'首尾帧', icon:'🎞️', desc:'首帧 + 尾帧 → 视频',
     fields:{ prompt:{req:true, ph:'描述中间的运动过程...'}, first_frame:{req:true}, last_frame:{req:true}, duration:{def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_4} } },
-  { key:'r2v',  id:'minimax_h3_lightx2v_v5',               name:'多图参考', icon:'🖼️', desc:'1~9 张参考图（首张必填）',
-    fields:{ prompt:{req:true, ph:'描述角色动作、场景...'}, ref_images:{req:true,min:1,max:9,ph:'可多选，最多 9 张'}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_9}, seed:{} } },
+  { key:'r2v',  id:'minimax_h3_lightx2v_v5',               name:'多图参考', icon:'🖼️', desc:'1~9 张参考图，可分别标注主体',
+    fields:{ prompt:{req:true, ph:'描述角色动作、场景...（可直接点名 图1/图2... 的主体）'}, ref_images:{req:true,min:1,max:9}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_9}, seed:{} } },
   { key:'r2v15',id:'minimax_h3_lightx2v_v5_15s',           name:'多图15秒', icon:'⏱️', desc:'多图参考，最长 15 秒',
-    fields:{ prompt:{req:true, ph:'描述角色动作、场景...'}, ref_images:{req:true,min:1,max:9,ph:'可多选，最多 9 张'}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_6}, seed:{} } },
+    fields:{ prompt:{req:true, ph:'描述角色动作、场景...'}, ref_images:{req:true,min:1,max:9}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_6}, seed:{} } },
   { key:'atov', id:'minimax_h3_image_audio_to_video',      name:'图+音频对口型', icon:'🎤', desc:'人物图 + 语音 → 自动对口型',
     fields:{ image:{req:true,ph:'上传 1 张人物图'}, audio:{req:true,ph:'上传 1 段语音'}, audio_duration:{label:'时长(秒)',def:5,min:1,max:15}, resolution:{def:'768p竖',opts:RES_1080_6} } },
-  { key:'atov2',id:'minimax_h3_image_audio_to_video_v2',   name:'多图多音频', icon:'🎭', desc:'多图 + 多音频，多人对话',
-    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9,ph:'可选，参考图'}, ref_audios:{min:0,max:3,ph:'可选，参考音频'}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_1080_6}, seed:{} } },
+  { key:'atov2',id:'minimax_h3_image_audio_to_video_v2',   name:'多图多音频', icon:'🎭', desc:'多图 + 多音频，可分别标注角色与音色',
+    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9}, ref_audios:{min:0,max:3}, duration:{def:5,min:1,max:10}, resolution:{def:'768p竖',opts:RES_1080_6}, seed:{} } },
   { key:'atov2s',id:'minimax_h3_image_audio_to_video_v2_15s', name:'多图多音频15秒', icon:'🎬', desc:'多图多音频，最长 15 秒',
-    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9,ph:'可选，参考图'}, ref_audios:{min:0,max:3,ph:'可选，参考音频'}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_4}, seed:{} } },
+    fields:{ prompt:{req:true, ph:'描述画面与对话场景...'}, ref_images:{min:0,max:9}, ref_audios:{min:0,max:3}, duration:{def:10,min:1,max:15}, resolution:{def:'768p竖',opts:RES_480_768_4}, seed:{} } },
 ];
 
 // ===================== 初始化 =====================
@@ -267,8 +278,7 @@ function renderModeTabs() {
 }
 
 function switchMode(key) {
-  const promptEl = document.getElementById('f_prompt');
-  if (promptEl) state.prompt = promptEl.value.trim();
+  syncState();
   currentMode = MODES.find(m => m.key === key);
   state.images = []; state.audios = []; state.firstFrame = null; state.lastFrame = null;
   state.image = null; state.audio = null;
@@ -277,51 +287,41 @@ function switchMode(key) {
   updateCostNote();
 }
 
+// 把当前表单里输入的值同步进 state，避免重渲染丢内容
+function syncState() {
+  const p = document.getElementById('f_prompt');
+  if (p) state.prompt = p.value.trim();
+  const d = document.getElementById('f_duration');
+  if (d) state.duration = parseInt(d.value) || state.duration;
+  const r = document.getElementById('f_resolution');
+  if (r) state.resolution = r.value;
+  const s = document.getElementById('f_seed');
+  if (s) state.seed = s.value;
+}
+
 // ===================== 表单渲染 =====================
 function renderForm() {
   if (!currentMode) return;
+  syncState();
   const f = currentMode.fields;
   const html = [];
   if (f.prompt) html.push(`
     <div class="field">
       <label>提示词 ${f.prompt.req?'<span class="req">*</span>':''}</label>
       <textarea id="f_prompt" placeholder="${f.prompt.ph || '描述你想生成的视频内容'}">${state.prompt||''}</textarea>
-      <small>写清楚画面主体、动作、镜头、光线、风格，效果更好。可参考 H3 提示词结构。</small>
+      <small>写清楚画面主体、动作、镜头、光线、风格。参考图/音频可直接用「图1/图2/音频1」等点名对应主体。</small>
     </div>`);
-  if (f.first_frame || f.last_frame) html.push(`
-    <div class="param-row">
-      ${f.first_frame?`<div class="field"><label>首帧图 <span class="req">*</span></label><div class="upload-area" id="ua_first" onclick="document.getElementById('file_first').click()"><div class="up-placeholder">📁 上传首帧</div><div class="upload-previews" id="pv_first"></div></div><input type="file" id="file_first" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'firstFrame','pv_first','ua_first')"></div>`:''}
-      ${f.last_frame?`<div class="field"><label>尾帧图 <span class="req">*</span></label><div class="upload-area" id="ua_last" onclick="document.getElementById('file_last').click()"><div class="up-placeholder">📁 上传尾帧</div><div class="upload-previews" id="pv_last"></div></div><input type="file" id="file_last" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'lastFrame','pv_last','ua_last')"></div>`:''}
+  if (f.ref_images) html.push(renderRefSlots('images', '参考图片', f.ref_images));
+  if (f.ref_audios) html.push(renderRefSlots('audios', '参考音频', f.ref_audios));
+  if (f.first_frame || f.last_frame) {
+    html.push(`<div class="param-row">
+      ${f.first_frame?renderSingleSlot('firstFrame','首帧图',true,false):''}
+      ${f.last_frame?renderSingleSlot('lastFrame','尾帧图',true,false):''}
     </div>`);
-  if (f.ref_images) html.push(`
-    <div class="field">
-      <label>参考图片 ${f.ref_images.req?'<span class="req">*</span>':''}</label>
-      <div class="upload-area" onclick="document.getElementById('file_imgs').click()">
-        <div class="up-placeholder">📁 ${f.ref_images.ph||'点击上传参考图（可多选）'}</div>
-        <div class="upload-previews" id="pv_imgs"></div>
-      </div>
-      <input type="file" id="file_imgs" accept="image/*" multiple style="display:none" onchange="handleImages(event)">
-    </div>`);
-  if (f.ref_audios) html.push(`
-    <div class="field">
-      <label>参考音频</label>
-      <div class="upload-area" onclick="document.getElementById('file_auds').click()">
-        <div class="up-placeholder">🎵 ${f.ref_audios.ph||'点击上传音频（可多选）'}</div>
-        <div class="upload-previews" id="pv_auds"></div>
-      </div>
-      <input type="file" id="file_auds" accept="audio/*,video/mp4" multiple style="display:none" onchange="handleAudios(event)">
-      <small>支持 MP3 / WAV / MP4 / FLAC</small>
-    </div>`);
-  if (f.image) html.push(`
-    <div class="field"><label>人物图片 <span class="req">*</span></label>
-      <div class="upload-area" onclick="document.getElementById('file_simg').click()"><div class="up-placeholder">📁 ${f.image.ph}</div><div class="upload-previews" id="pv_simg"></div></div>
-      <input type="file" id="file_simg" accept="image/*" style="display:none" onchange="handleSingleUpload(event,'image','pv_simg')">
-    </div>`);
-  if (f.audio) html.push(`
-    <div class="field"><label>语音音频 <span class="req">*</span></label>
-      <div class="upload-area" onclick="document.getElementById('file_saud').click()"><div class="up-placeholder">🎵 ${f.audio.ph}</div><div class="upload-previews" id="pv_saud"></div></div>
-      <input type="file" id="file_saud" accept="audio/*,video/mp4" style="display:none" onchange="handleSingleUpload(event,'audio','pv_saud')">
-    </div>`);
+  }
+  if (f.image) html.push(renderSingleSlot('image','人物图片',true,false));
+  if (f.audio) html.push(renderSingleSlot('audio','语音音频',true,true));
+
   if (f.duration || f.audio_duration) {
     const d = f.duration || f.audio_duration;
     html.push(`
@@ -334,7 +334,7 @@ function renderForm() {
           <select id="f_resolution">${(f.resolution.opts).map(o=>`<option value="${o}" ${o===(state.resolution||f.resolution.def)?'selected':''}>${o}</option>`).join('')}</select>
         </div>
       </div>`);
-  } else {
+  } else if (f.resolution) {
     html.push(`
       <div class="field"><label>分辨率</label>
         <select id="f_resolution">${(f.resolution.opts).map(o=>`<option value="${o}" ${o===(state.resolution||f.resolution.def)?'selected':''}>${o}</option>`).join('')}</select>
@@ -346,101 +346,126 @@ function renderForm() {
   document.getElementById('formArea').innerHTML = html.join('');
 }
 
-// ===================== 上传处理 =====================
-function fileToDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+// ===================== 参考素材槽位 =====================
+function renderRefSlots(type, label, rules) {
+  const min = rules.min || 0;
+  const max = rules.max || 9;
+  while (state[type].length < min) state[type].push({ url:'', label:'' });
+  const isAudio = type === 'audios';
+  const slots = state[type].map((_, i) => renderRefSlot(type, i, isAudio));
+  let addBtn = '';
+  if (state[type].length < max) addBtn = `<button class="btn btn-outline add-slot" onclick="addSlot('${type}',${max})">+ 添加${isAudio?'音频':'图'} ${state[type].length+1}</button>`;
+  const tip = isAudio
+    ? '每个音频一个槽位，标注音色主体；生成时自动对应为 <code>&lt;Audio N&gt;</code>，提示词里可直接点名'
+    : '每张图独立上传并标注主体（如 男主/女主/场景）；生成时自动对应为 <code>&lt;Picture N&gt;</code>，提示词里可直接点名';
+  return `<div class="field"><label>${label} ${rules.req?'<span class="req">*</span>':''} <small style="color:var(--text3);font-weight:400;display:block;margin-top:2px">${tip}</small></label>${slots.join('')}${addBtn}</div>`;
 }
 
-async function handleImages(e) {
-  const files = Array.from(e.target.files || []);
-  if (!files.length) return;
-  const max = currentMode.fields.ref_images.max || 9;
-  for (const file of files) {
-    if (state.images.length >= max) { toast(`最多 ${max} 张`); break; }
-    try {
-      const url = await fileToDataURL(file);
-      state.images.push(url);
-      renderImgPreviews('pv_imgs', state.images, 'images');
-    } catch(err) { toast('读取图片失败'); }
-  }
-  e.target.value = '';
+function renderRefSlot(type, i, isAudio) {
+  const item = state[type][i] || {};
+  const filled = !!item.url;
+  return `
+  <div class="ref-slot">
+    <div class="ref-slot-head">
+      <span class="ref-slot-title">${isAudio?'🎵 音频':'🖼 图'} ${i+1}</span>
+      <input type="text" class="ref-slot-label" value="${escAttr(item.label||'')}" placeholder="主体（如：男主）" oninput="setLabel('${type}',${i},this.value)">
+    </div>
+    <div class="upload-area ${filled?'has':''}" onclick="document.getElementById('up_${type}_${i}').click()">
+      ${filled ? (isAudio ? `<span class="aud-badge">🎵 ${escHtml(item.name||'')}</span>` : `<img src="${item.url}" alt="">`) : `<span class="up-placeholder">${isAudio?'🎵 点击上传音频':'📁 点击上传图片'}</span>`}
+    </div>
+    <input type="file" id="up_${type}_${i}" accept="${isAudio?'audio/*,video/mp4':'image/*'}" style="display:none" onchange="uploadToSlot('${type}',${i},this)">
+    ${filled?`<button class="slot-clear" onclick="clearSlot('${type}',${i})">✕ 移除</button>`:''}
+  </div>`;
 }
-async function handleAudios(e) {
-  const files = Array.from(e.target.files || []);
-  if (!files.length) return;
-  const max = currentMode.fields.ref_audios.max || 3;
-  for (const file of files) {
-    if (state.audios.length >= max) { toast(`最多 ${max} 段`); break; }
-    try {
-      const url = await fileToDataURL(file);
-      state.audios.push({ url, name: file.name, size: file.size });
-      renderAudPreviews();
-    } catch(err) { toast('读取音频失败'); }
-  }
-  e.target.value = '';
+
+function renderSingleSlot(type, title, required, isAudio) {
+  const item = state[type] || {};
+  const filled = !!item.url;
+  return `
+  <div class="field">
+    <label>${title} ${required?'<span class="req">*</span>':''}</label>
+    <div class="ref-slot">
+      <div class="ref-slot-head">
+        <span class="ref-slot-title">${isAudio?'🎵':'🖼'} ${title}</span>
+        <input type="text" class="ref-slot-label" value="${escAttr(item.label||'')}" placeholder="主体（如：男主）" oninput="setSingleLabel('${type}',this.value)">
+      </div>
+      <div class="upload-area ${filled?'has':''}" onclick="document.getElementById('up_s_${type}').click()">
+        ${filled ? (isAudio ? `<span class="aud-badge">🎵 ${escHtml(item.name||'')}</span>` : `<img src="${item.url}" alt="">`) : `<span class="up-placeholder">${isAudio?'🎵 点击上传音频':'📁 点击上传图片'}</span>`}
+      </div>
+      <input type="file" id="up_s_${type}" accept="${isAudio?'audio/*,video/mp4':'image/*'}" style="display:none" onchange="uploadSingle('${type}',this)">
+      ${filled?`<button class="slot-clear" onclick="clearSlot('${type}')">✕ 移除</button>`:''}
+    </div>
+  </div>`;
 }
-function handleSingleUpload(e, key, pvId, uaId) {
-  const file = (e.target.files || [])[0];
+
+function uploadToSlot(type, i, input) {
+  const file = input.files && input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
-    state[key] = { url: ev.target.result, name: file.name, size: file.size };
-    const pv = document.getElementById(pvId);
-    if (state[key].url.startsWith('data:image')) {
-      pv.innerHTML = `<div class="pv"><img src="${state[key].url}"><button class="del" onclick="clearSingle('${key}','${pvId}')">✕</button></div>`;
-    } else {
-      pv.innerHTML = `<div class="pv audio-pv">🎵<span>${file.name.slice(0,10)}</span><button class="del" onclick="clearSingle('${key}','${pvId}')">✕</button></div>`;
-    }
-    const ph = document.querySelector(`#${uaId} .up-placeholder`);
-    if (ph) ph.textContent = '✅ 已上传';
+  reader.onload = e => {
+    state[type][i] = { ...(state[type][i]||{}), url: e.target.result, name: file.name };
+    renderForm();
   };
   reader.readAsDataURL(file);
-  e.target.value = '';
+  input.value = '';
 }
-function clearSingle(key, pvId) {
-  state[key] = null;
-  document.getElementById(pvId).innerHTML = '';
-  toast('已移除');
+function uploadSingle(type, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state[type] = { ...(state[type]||{}), url: e.target.result, name: file.name };
+    renderForm();
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
 }
-function renderImgPreviews(elId, arr, stateKey) {
-  const el = document.getElementById(elId);
-  el.innerHTML = arr.map((u,i)=>`
-    <div class="pv"><img src="${u}"><button class="del" onclick="removeItem('${stateKey}',${i})">✕</button></div>`).join('');
+function addSlot(type, max) {
+  if (state[type].length >= max) return;
+  state[type].push({ url:'', label:'' });
+  renderForm();
 }
-function renderAudPreviews() {
-  const el = document.getElementById('pv_auds');
-  el.innerHTML = state.audios.map((a,i)=>`
-    <div class="pv audio-pv">🎵<span>${a.name.slice(0,10)}</span><button class="del" onclick="removeItem('audios',${i})">✕</button></div>`).join('');
-}
-function removeItem(key, i) {
-  state[key].splice(i, 1);
-  if (key === 'audios') renderAudPreviews(); else renderImgPreviews('pv_imgs', state.images, 'images');
+function setLabel(type, i, val) { state[type][i] = { ...(state[type][i]||{}), label: val }; }
+function setSingleLabel(type, val) { state[type] = { ...(state[type]||{}), label: val }; }
+function clearSlot(type, i) {
+  if (typeof i === 'number') state[type][i] = { url:'', label:'' };
+  else state[type] = null;
+  renderForm();
 }
 
 // ===================== 生成 =====================
+// 把参考素材标注拼成 H3 能识别的 <Picture N>/<Audio N> 对应表，塞进提示词开头
+function buildPromptWithRefs(raw) {
+  const f = currentMode.fields;
+  const defs = [];
+  if (f.ref_images) state.images.forEach((x,i)=>{ if(x && x.url) defs.push(`<Picture ${i+1}> = ${(x.label||('图'+(i+1))).trim()}`); });
+  if (f.ref_audios) state.audios.forEach((x,i)=>{ if(x && x.url) defs.push(`<Audio ${i+1}> = ${(x.label||('音频'+(i+1))).trim()}`); });
+  if (f.first_frame && state.firstFrame?.url) defs.push(`<Picture 1> = 首帧${state.firstFrame.label?'（'+state.firstFrame.label+'）':''}`);
+  if (f.last_frame && state.lastFrame?.url) defs.push(`<Picture 2> = 尾帧${state.lastFrame.label?'（'+state.lastFrame.label+'）':''}`);
+  if (f.image && state.image?.url) defs.push(`<Picture 1> = ${(state.image.label||'主画面').trim()}`);
+  if (f.audio && state.audio?.url) defs.push(`<Audio 1> = ${(state.audio.label||'主音频').trim()}`);
+  if (!defs.length) return raw;
+  return `[参考素材对应]\n${defs.join('\n')}\n\n[正片描述]\n${raw}`;
+}
+
 function buildBody() {
   if (!currentMode) return null;
   const f = currentMode.fields;
   const b = {};
   const promptEl = document.getElementById('f_prompt');
-  if (promptEl) b.prompt = promptEl.value.trim();
+  if (promptEl) b.prompt = buildPromptWithRefs(promptEl.value.trim());
   const durEl = document.getElementById('f_duration');
-  if (durEl) b[f.audio_duration ? 'audio_duration' : 'duration'] = clamp(parseInt(durEl.value)||f.duration?.def||5, f.duration?.min||f.audio_duration?.min||1, f.duration?.max||f.audio_duration?.max||15);
+  if (durEl) b[f.audio_duration ? 'audio_duration' : 'duration'] = clamp(parseInt(durEl.value)||(f.duration||f.audio_duration).def||5, (f.duration||f.audio_duration).min||1, (f.duration||f.audio_duration).max||15);
   const resEl = document.getElementById('f_resolution');
   if (resEl) b.resolution = resEl.value;
   const seedEl = document.getElementById('f_seed');
   if (seedEl && seedEl.value) b.seed = parseInt(seedEl.value);
-  if (f.ref_images) state.images.forEach((u,i) => b['ref_image_'+i] = u);
-  if (f.ref_audios) state.audios.forEach((a,i) => b['ref_audio_'+i] = a.url);
-  if (f.first_frame && state.firstFrame) b.first_frame = state.firstFrame.url;
-  if (f.last_frame && state.lastFrame) b.last_frame = state.lastFrame.url;
-  if (f.image && state.image) b.ref_image_0 = state.image.url;
-  if (f.audio && state.audio) b.ref_audio_0 = state.audio.url;
+  if (f.ref_images) state.images.forEach((x,i)=>{ if(x && x.url) b['ref_image_'+i] = x.url; });
+  if (f.ref_audios) state.audios.forEach((x,i)=>{ if(x && x.url) b['ref_audio_'+i] = x.url; });
+  if (f.first_frame && state.firstFrame?.url) b.first_frame = state.firstFrame.url;
+  if (f.last_frame && state.lastFrame?.url) b.last_frame = state.lastFrame.url;
+  if (f.image && state.image?.url) b.ref_image_0 = state.image.url;
+  if (f.audio && state.audio?.url) b.ref_audio_0 = state.audio.url;
   return b;
 }
 
@@ -448,11 +473,11 @@ function validate(body) {
   if (!currentMode) return '请选择生成模式';
   const f = currentMode.fields;
   if (f.prompt && !body.prompt) return '请输入提示词';
-  if (f.first_frame && !state.firstFrame) return '请上传首帧图';
-  if (f.last_frame && !state.lastFrame) return '请上传尾帧图';
-  if (f.ref_images && f.ref_images.req && !state.images.length) return '请至少上传 1 张参考图';
-  if (f.image && !state.image) return '请上传人物图片';
-  if (f.audio && !state.audio) return '请上传语音音频';
+  if (f.first_frame && !state.firstFrame?.url) return '请上传首帧图';
+  if (f.last_frame && !state.lastFrame?.url) return '请上传尾帧图';
+  if (f.ref_images && f.ref_images.req && !state.images[0]?.url) return '请至少上传 1 张参考图';
+  if (f.image && !state.image?.url) return '请上传人物图片';
+  if (f.audio && !state.audio?.url) return '请上传语音音频';
   return null;
 }
 
@@ -541,7 +566,6 @@ async function poll(taskId, token) {
       document.getElementById('progressMeta').textContent = `已等待 ${mm}:${ss} · 视频生成一般需 5 分钟以上`;
     }
   } catch(e) {
-    // 查询失败（网络/临时），保留轮询，仅提示
     document.getElementById('progressMeta').textContent = '网络波动，继续尝试...';
   }
 }
@@ -549,13 +573,13 @@ async function poll(taskId, token) {
 function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
 // ===================== 结果展示 =====================
+let currentResult = null;
 function showResult(result) {
   const div = document.getElementById('resultDisplay');
   div.innerHTML = `<video src="${result.url}" controls loop playsinline style="max-width:100%;border-radius:12px;"></video><p style="color:var(--text3);font-size:12px;margin-top:8px;">⚠️ 结果链接有时效，建议立即下载保存。</p>`;
   document.getElementById('resultActions').style.display = 'flex';
   currentResult = result;
 }
-let currentResult = null;
 
 function downloadResult() {
   if (!currentResult) return;
@@ -651,6 +675,7 @@ function updateCostNote() {
 
 // ===================== 工具函数 =====================
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+function escAttr(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function toggleApiKeyVis() {
   const inp = document.getElementById('apiKeyInput');
   inp.type = inp.type === 'password' ? 'text' : 'password';
