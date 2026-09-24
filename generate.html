@@ -233,13 +233,17 @@ let uploadedImages = [];
 let lastResult = null;
 
 // ===================== DALL-E 尺寸映射 =====================
-// aspect_ratio + resolution -> DALL-E size
+// ⚠️ 2026-09-25：这张表**已经用不到了**（所有 dalle 模型都改成了 lockedQuality，
+//    尺寸直接取比例下拉里存的像素值；chat 模型走 image_config，不看这里）。
+//    留着是因为万一以后再加一支「清晰度可选」的 dalle 模型会回到这条路径。
+//    真要用之前先看这条：乘丰那几支生图**卡在约 157 万像素**，下面 2K/4K 两档出来的图是一样的，
+//    而且 4:3 / 3:4 那两行原本写错了（4K 都写成方形的 2048x2048）。别再照着抄。
 const DALLE_SIZE_MAP = {
   '1:1':  { '1080P': '1024x1024', '2K': '2048x2048', '4K': '2048x2048' },
   '16:9': { '1080P': '1280x720',  '2K': '2048x1152', '4K': '2048x1152' },
   '9:16': { '1080P': '720x1280',  '2K': '1152x2048', '4K': '1152x2048' },
-  '4:3':  { '1080P': '1792x1024', '2K': '1792x1024', '4K': '2048x2048' },
-  '3:4':  { '1080P': '1024x1792', '2K': '1024x1792', '4K': '2048x2048' },
+  '4:3':  { '1080P': '1360x1024', '2K': '1360x1024', '4K': '1360x1024' },
+  '3:4':  { '1080P': '1024x1360', '2K': '1024x1360', '4K': '1024x1360' },
 };
 
 // ===================== 模型定义 =====================
@@ -259,8 +263,12 @@ const MODELS = [
   //   带后缀那支能出真 4K，所以排在第一位当默认；无后缀那支只能 1K。
   { id: 'gpt-image-2.5-flare', name: 'image2.5 4K', api: 'dalle', sizes: ['3840x2160','2160x3840'], lockedQuality: 'high' },
   { id: 'gpt-image-2.5', name: 'image2.5 1K', api: 'dalle', sizes: ['1024x1024','1536x1024','1024x1536'], lockedQuality: 'low' },
-  { id: 'gpt-image-2', name: 'GPT Image 2', api: 'dalle', defaultAspect: '1:1', defaultRes: '1080P' },
-  { id: 'gpt-4o-image', name: 'GPT Image', api: 'dalle', defaultAspect: '1:1', defaultRes: '1080P' },
+  // 2026-09-25 实测（直接打乘丰接口量真实出图尺寸）：这两支**卡在约 157 万像素**，
+  //   给 1024x1024 出 1254x1254、给 2048x2048 也出 1254x1254、给 1280x720 出 1672x941。
+  //   也就是说「1080P / 2K / 4K」三个选项出来的图**完全一样** —— 选了个寂寞。
+  //   所以跟 2.5 系一样锁死清晰度、只留横竖方三种比例，别让人以为选 4K 能更清晰。
+  { id: 'gpt-image-2', name: 'GPT Image 2（固定约 1K）', api: 'dalle', sizes: ['1024x1024','1536x1024','1024x1536'], lockedQuality: 'low' },
+  { id: 'gpt-4o-image', name: 'GPT Image（固定约 1K）', api: 'dalle', sizes: ['1024x1024','1536x1024','1024x1536'], lockedQuality: 'low' },
   { id: 'gemini-2.5-flash-image-hd', name: 'Gemini 2.5 Flash 图像 HD', api: 'chat', defaultAspect: '1:1', defaultRes: '2K', maxRes: '2K' },
   { id: 'gemini-3.1-flash-image-preview', name: 'Gemini 3.1 Flash 图像', api: 'chat', defaultAspect: '1:1', defaultRes: '2K', maxRes: '2K' },
   { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro 图像', api: 'chat', defaultAspect: '16:9', defaultRes: '2K', maxRes: '4K' },
