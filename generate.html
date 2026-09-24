@@ -246,7 +246,19 @@ const DALLE_SIZE_MAP = {
 const ASPECTS = ['1:1','16:9','9:16','4:3','3:4'];
 const RESOLUTIONS = ['1080P','2K','4K'];
 
+/** 把 "3840x2160" 说成人话（锁定清晰度的模型，比例下拉直接用像素尺寸当值） */
+function sizeLabel(size) {
+  const parts = size.split('x');
+  const w = Number(parts[0]), h = Number(parts[1]);
+  if (w === h) return '方形 ' + size;
+  return (w > h ? '横屏 ' : '竖屏 ') + size;
+}
+
 const MODELS = [
+  // 2026-09-24 哥定：2.5 系的清晰度是**模型自带**的，界面不给改（横竖屏仍可选，见 sizes）。
+  //   带后缀那支能出真 4K，所以排在第一位当默认；无后缀那支只能 1K。
+  { id: 'gpt-image-2.5-flare', name: 'image2.5 4K', api: 'dalle', sizes: ['3840x2160','2160x3840'], lockedQuality: 'high' },
+  { id: 'gpt-image-2.5', name: 'image2.5 1K', api: 'dalle', sizes: ['1024x1024','1536x1024','1024x1536'], lockedQuality: 'low' },
   { id: 'gpt-image-2', name: 'GPT Image 2', api: 'dalle', defaultAspect: '1:1', defaultRes: '1080P' },
   { id: 'gpt-4o-image', name: 'GPT Image', api: 'dalle', defaultAspect: '1:1', defaultRes: '1080P' },
   { id: 'gemini-2.5-flash-image-hd', name: 'Gemini 2.5 Flash 图像 HD', api: 'chat', defaultAspect: '1:1', defaultRes: '2K', maxRes: '2K' },
@@ -265,9 +277,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // API Key
   const savedKey = localStorage.getItem('gen-api-token');
   if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
-  // 初始化模型列表
+  // 初始化模型列表（第一个就是默认 —— image2.5 4K）
   const sel = document.getElementById('modelSelect');
-  sel.innerHTML = MODELS.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  sel.innerHTML = MODELS.map((m, i) => `<option value="${m.id}" ${i === 0 ? 'selected' : ''}>${m.name}</option>`).join('');
   onModelChange();
   // 历史
   renderHistory();
@@ -278,6 +290,17 @@ function onModelChange() {
   currentModel = MODELS.find(m => m.id === id);
   if (!currentModel) return;
 
+  // 锁定清晰度的模型（2.5 系）：清晰度是模型自带的，只给横/竖/方三种尺寸可选，
+  //   连分辨率下拉一起锁掉，免得学员选了 4K 却拿到 1K。
+  if (currentModel.lockedQuality) {
+    const labels = currentModel.sizes.map(sizeLabel);
+    popSelByLabel('aspectSelect', currentModel.sizes, labels, currentModel.sizes[0]);
+    popSelByLabel('imgSizeSelect', [currentModel.lockedQuality === 'high' ? '4K' : '1K'], [currentModel.lockedQuality === 'high' ? '4K（固定）' : '1K（固定）'], currentModel.lockedQuality === 'high' ? '4K' : '1K');
+    document.getElementById('imgSizeSelect').disabled = true;
+    return;
+  }
+
+  document.getElementById('imgSizeSelect').disabled = false;
   // 根据模型的 maxRes 限制可用的分辨率选项
   const maxRes = currentModel.maxRes || '4K';
   const maxIdx = RESOLUTIONS.indexOf(maxRes);
@@ -285,6 +308,13 @@ function onModelChange() {
 
   popSel('aspectSelect', ASPECTS, currentModel.defaultAspect || '1:1');
   popSel('imgSizeSelect', availRes, currentModel.defaultRes || '1080P');
+}
+
+/** 值≠显示文案的下拉（锁定模型用像素尺寸当值，显示成「横屏 3840x2160」） */
+function popSelByLabel(id, values, labels, def) {
+  document.getElementById(id).innerHTML = values
+    .map((v, i) => `<option value="${v}" ${v === def ? 'selected' : ''}>${labels[i]}</option>`)
+    .join('');
 }
 
 function popSel(id, opts, def) {
@@ -365,9 +395,10 @@ async function generateImage(prompt, apiKey) {
 
   let resp, data;
   if (currentModel.api === 'dalle') {
-    // DALL-E: 用 aspect+resolution 映射到 DALL-E 尺寸
+    // 锁定清晰度的模型：下拉里存的**就是**像素尺寸，直接拿来用（清晰度由模型自带，不看 res）
+    // 其余模型：用 aspect+resolution 映射到 DALL-E 尺寸
     const sizeMap = DALLE_SIZE_MAP[aspect] || {};
-    const size = sizeMap[res] || '1024x1024';
+    const size = currentModel.lockedQuality ? aspect : (sizeMap[res] || '1024x1024');
     if (uploadedImages.length) {
       // 有参考图 → 走 /images/edits 图生图（multipart，浏览器自动带 boundary）
       const fd = new FormData();
@@ -390,7 +421,7 @@ async function generateImage(prompt, apiKey) {
     if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
     const images = (data.data || []).map(d => d.url || d.b64_json).filter(Boolean);
     if (!images.length) throw new Error('API 未返回图像');
-    showResult({ urls: images, model: currentModel.id, prompt });
+    showResult({ urls: images, model: currentModel.name, prompt });
   } else {
     // Chat API (Gemini / Nano Banana): 用 image_config
     const msgContent = uploadedImages.length
@@ -406,7 +437,7 @@ async function generateImage(prompt, apiKey) {
     if (!resp.ok) throw new Error(data.error?.message || 'API 错误 ' + resp.status);
     const images = extractImages(data);
     if (!images.length) throw new Error('API 未返回图像');
-    showResult({ urls: images, model: currentModel.id, prompt });
+    showResult({ urls: images, model: currentModel.name, prompt });
   }
   clearTimeout(timer);
   hideProgress();
